@@ -14,7 +14,7 @@ function EntryBox() {
     <>
     <label>Enter your name!   <input onChange={nameChangeHandler}></input></label>
     <p></p>
-    <h3>Your name is {name}!</h3>
+    <h3>Your name is {name}?</h3>
     </>
   );
 }
