@@ -1,13 +1,13 @@
 import './App.css';
-import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./login"
-import Register from "./register"
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import login, {Login, Register} from "./login"
 
 export default function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<Navigate to="/login" />} />
+
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>
