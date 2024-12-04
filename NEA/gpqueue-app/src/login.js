@@ -74,7 +74,8 @@ function Register() {
                 Password: password,
                 fName: fname,
                 sName: sname,
-                
+                DOB: dob,
+                pNumber: pnumber
             });
         } else {
             setOpacity(1);
