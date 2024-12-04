@@ -62,21 +62,22 @@ function Register() {
         let cpassword = form.elements.cpassword.value;
         if (password === cpassword){
             setOpacity(0);
-            console.log(password, cpassword)
             let email = form.elements.email.value;
             // TO DO - WHEN API INTEGRATED, MAKE A CHECK SO THAT THE SAME EMAIL & NUMBER ISN'T USED TWICE
             let fname = form.elements.fname.value;
             let sname = form.elements.sname.value;
             let dob = form.elements.dob.value;
             let pnumber = form.elements.pnumber.value;
-            setDetails({
+            let temp_details = {
                 Email: email,
                 Password: password,
                 fName: fname,
                 sName: sname,
                 DOB: dob,
                 pNumber: pnumber
-            });
+            };
+            setDetails(temp_details);
+            console.log("Registration submitted", temp_details)
         } else {
             setOpacity(1);
             console.log(password, cpassword)
