@@ -1,7 +1,10 @@
 import './App.css';
 import React from "react";
 import {useState} from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
+// eslint-disable-next-line
+import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
+// eslint-disable-next-line
+import { Homepage } from './home';
 
 export{
     Login,
@@ -10,7 +13,7 @@ export{
 
 function Login() {
 
-    let [details, setDetails] = useState({Email:'', Password:''});
+    const navigate = useNavigate();
 
     function handleSubmit(event) {
 
@@ -18,12 +21,9 @@ function Login() {
         const form = event.target;
         let email = form.elements.email.value;
         let password = form.elements.password.value;
-        setDetails({
-            Email: email,
-            Password: password
-        });
     
         console.log('Form submitted', { Email: email, Password: password });
+        navigate('/home');
     }
 
 
@@ -51,12 +51,20 @@ function Login() {
 
 function Register() {
 
-    let [details, setDetails] = useState({Email:'', Password:'', fName:'', sName:'', DOB:'', pNumber:null});
+    //let [details, setDetails] = useState({Email:'', Password:'', fName:'', sName:'', DOB:'', pNumber:null, staff:false});
     let [opacity, setOpacity] = useState(0);
+    let [staffBool, setStaffBool] = useState(false);
+
+
+    function applyStaff() {
+        console.log('onclick');
+        setStaffBool(true);
+    }
 
     function handleSubmit(event) {
 
         event.preventDefault()
+        console.log('submission')
         const form = event.target;
         let password = form.elements.password.value;
         let cpassword = form.elements.cpassword.value;
@@ -74,9 +82,10 @@ function Register() {
                 fName: fname,
                 sName: sname,
                 DOB: dob,
-                pNumber: pnumber
+                pNumber: pnumber,
+                staffBool: staffBool
             };
-            setDetails(temp_details);
+            //setDetails(temp_details);
             console.log("Registration submitted", temp_details)
         } else {
             setOpacity(1);
@@ -112,8 +121,9 @@ function Register() {
         </div>
         </div>
         <button type='submit'>Register!</button>
+        <button style={{position:'absolute', right:0, bottom:0}} type='submit_as_staff' onClick={applyStaff}>Register as Staff</button>
         </form>
-        <h3 style={{color: 'red', opacity: opacity, 'text-align':'center'}}>Passwords do not match, try again.</h3>
+        <h3 style={{color: 'red', opacity: opacity, textAlign:'center'}}>Passwords do not match, try again.</h3>
         </>
     );
 }

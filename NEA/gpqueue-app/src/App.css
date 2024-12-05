@@ -20,3 +20,21 @@
   flex: 50%;
   width: 35%;
 }
+
+.topBar {
+  height: 100px;
+  background-color: orange;
+  display: flex;
+}
+
+.icon {
+  width: 100px;
+  height: 100px;
+  margin-right: 10px;
+}
+
+.PatientBarBox {
+  border-color: #00b2ca;
+  border-width: 10px;
+  width: 300px
+}
