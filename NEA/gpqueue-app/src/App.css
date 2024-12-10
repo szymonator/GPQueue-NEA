@@ -1,9 +1,9 @@
 .App {
   text-align: center;
+  align-items: center;
 }
 
 .App-header {
-
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -34,7 +34,34 @@
 }
 
 .PatientBarBox {
-  border-color: #00b2ca;
-  border-width: 10px;
-  width: 300px
+  border-style: solid;
+  border-color: #314CB6;
+  border-width: 5px;
+  width: 300px;
+  margin: 5px;
+  text-align: center;
+  border-radius: 15px;
+}
+
+.centerPage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 20px;            
+  height: 80vh;
+}
+
+.buttonDiv {
+  border-style: solid;
+  border-color: #000000;
+  text-align: center;
+  width: 500px;
+  border-radius: 15px;
+  background-color: #00b2ca;
+}
+
+.invisibleDiv{
+  border-style: hidden;
+  text-align: center;
 }
