@@ -1,10 +1,11 @@
 import './App.css';
-import React from "react";
+import React, { useEffect } from "react";
 import {useState} from "react";
 // eslint-disable-next-line
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 // eslint-disable-next-line
-import { Homepage } from './home';
+import { Homepage } from './2 - home';
+import { useUser } from './userContext';
 
 export{
     Login,
@@ -14,6 +15,8 @@ export{
 function Login() {
 
     const navigate = useNavigate();
+    const { setCookies } = useUser();
+    const [loading, setLoading] = useState(false);
 
     function handleSubmit(event) {
 
@@ -21,10 +24,30 @@ function Login() {
         const form = event.target;
         let email = form.elements.email.value;
         let password = form.elements.password.value;
+
+        setLoading(true);
     
         console.log('Form submitted', { Email: email, Password: password });
-        navigate('/home');
+
+        //API AUTHENTICATION STUFF, AS ONE DOES
+        let type = 'staff'
+        let name = 'Szymon Galutowski'
+        let id = '1625'
+
+        setCookies({
+            type: type,
+            name: name,
+            id: id,
+        });
+
+        navigate('/home')
     }
+
+    // useEffect(() => {
+    //     if (cookies.type && cookies.name && cookies.id) {
+    //         navigate('/home')
+    //     }
+    // }, [loading, navigate])
 
 
     return(
@@ -48,17 +71,23 @@ function Login() {
 
 
 
-
 function Register() {
 
     //let [details, setDetails] = useState({Email:'', Password:'', fName:'', sName:'', DOB:'', pNumber:null, staff:false});
     let [opacity, setOpacity] = useState(0);
     let [staffBool, setStaffBool] = useState(false);
+    const { setCookies } = useUser();
+    const navigate = useNavigate();
+    let type
 
+    function applyPatient() {
+        type = 'patient'
+    }
 
     function applyStaff() {
         console.log('onclick');
         setStaffBool(true);
+        type = 'staff'
     }
 
     function handleSubmit(event) {
@@ -87,6 +116,18 @@ function Register() {
             };
             //setDetails(temp_details);
             console.log("Registration submitted", temp_details)
+
+            //API STUFF TO REGISTER USER, AND FETCH ID
+            let id = '1625'
+
+            setCookies({
+                type: type,
+                name: fname+' '+sname,
+                id: id,
+            });
+
+            navigate("/home");
+
         } else {
             setOpacity(1);
             console.log(password, cpassword)
@@ -120,7 +161,7 @@ function Register() {
             <p>Phone Number (optional):</p><input name='pnumber'></input>
         </div>
         </div>
-        <button type='submit'>Register!</button>
+        <button type='submit' onClick={applyPatient}>Register!</button>
         <button style={{position:'absolute', right:0, bottom:0}} type='submit_as_staff' onClick={applyStaff}>Register as Staff</button>
         </form>
         <h3 style={{color: 'red', opacity: opacity, textAlign:'center'}}>Passwords do not match, try again.</h3>
