@@ -6,17 +6,18 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } f
 // eslint-disable-next-line
 import { Homepage } from './2 - home';
 import { useUser } from './userContext';
+import Stack from './stack';
 
 export{
     Login,
-    Register
+    Register,
+    StaffApproval,
 }
 
 function Login() {
 
     const navigate = useNavigate();
     const { setCookies } = useUser();
-    const [loading, setLoading] = useState(false);
 
     function handleSubmit(event) {
 
@@ -24,13 +25,11 @@ function Login() {
         const form = event.target;
         let email = form.elements.email.value;
         let password = form.elements.password.value;
-
-        setLoading(true);
     
         console.log('Form submitted', { Email: email, Password: password });
 
         //API AUTHENTICATION STUFF, AS ONE DOES
-        let type = 'staff'
+        let type = 'patient'
         let name = 'Szymon Galutowski'
         let id = '1625'
 
@@ -38,17 +37,12 @@ function Login() {
             type: type,
             name: name,
             id: id,
+            prevPageStack: new Stack(),
+            currentPage: 'home'
         });
 
         navigate('/home')
     }
-
-    // useEffect(() => {
-    //     if (cookies.type && cookies.name && cookies.id) {
-    //         navigate('/home')
-    //     }
-    // }, [loading, navigate])
-
 
     return(
         <div className={'App-header'}>
@@ -126,7 +120,11 @@ function Register() {
                 id: id,
             });
 
-            navigate("/home");
+            if (type === 'patient') {
+                navigate("/home");
+            } else {
+                navigate("/staffApproval")
+            }
 
         } else {
             setOpacity(1);
@@ -166,5 +164,16 @@ function Register() {
         </form>
         <h3 style={{color: 'red', opacity: opacity, textAlign:'center'}}>Passwords do not match, try again.</h3>
         </>
+    );
+}
+
+
+function StaffApproval() {
+    return(
+        <div className={'centerPage'}>
+            <img src="https://banner2.cleanpng.com/20180131/roe/av2ouosx2.webp" alt='Logo' style={{width:'400px', height:'400px', marginTop:'50px'}} />
+            <h1>Please wait for your supervisor to approve your registration.</h1>
+            <h1>When it is approved, you will be able to log in by going back to the login page.</h1>
+        </div>
     );
 }

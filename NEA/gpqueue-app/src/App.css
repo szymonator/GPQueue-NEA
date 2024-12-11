@@ -65,3 +65,13 @@
   border-style: hidden;
   text-align: center;
 }
+
+.Back{
+  border-style: solid;
+  text-align: center;
+  border-radius: 50px;
+  width: 100px;
+  background-color: #00b2ca;
+  position: relative;
+  float: right;
+}

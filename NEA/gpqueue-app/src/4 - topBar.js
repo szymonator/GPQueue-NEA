@@ -1,10 +1,10 @@
 import './App.css';
-import './timeDisplay.js'
+import './smallComponents.js'
 import React from "react";
 import {useState} from "react";
 // eslint-disable-next-line
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
-import { Timer } from './timeDisplay.js';
+import { Timer } from './smallComponents.js';
 import { useUser } from "./userContext";
 
 export{
@@ -14,8 +14,8 @@ export{
 
 function PatientTopBar() {
 
-    // code that checks if user is staff or patient
-    let patientName = 'Szymon Galutowski'
+    let { cookies } = useUser();
+    const patientName = cookies.name;
     let [buttonColor, setButtonColor] = useState({1:'#00B2CA', 2:'#00B2CA', 3:'#00B2CA', 4:'#00B2CA', 5:'#00B2CA'});
     const navigate = useNavigate();
 
@@ -31,11 +31,10 @@ function PatientTopBar() {
     const handleNormal5 = (event) => setButtonColor({1:buttonColor[1], 2:buttonColor[2], 3:buttonColor[3], 4:buttonColor[4], 5:'#00b2ca'});
 
     const sendHome = (event) =>
-        //navigate(\home);
-        console.log("Sending home")
+        navigate('/home');
 
     const sendToAppts = (event) =>
-        //navigate(\appointments);
+        navigate('/appointments');
         console.log('sending to appointments page')
 
     const sendToPresc = (event) =>
@@ -85,8 +84,8 @@ function PatientTopBar() {
 
 function StaffTopBar() {
 
-    // code that checks if user is staff or patient
-    let staffName = 'Szymon Galutowski'
+    const { cookies } = useUser();
+    const staffName = cookies.name;
     let [buttonColor, setButtonColor] = useState({1:'#00B2CA', 2:'#00B2CA', 3:'#00B2CA', 4:'#00B2CA', 5:'#00B2CA'});
     const navigate = useNavigate();
 
@@ -100,22 +99,22 @@ function StaffTopBar() {
     const handleNormal4 = (event) => setButtonColor({1:buttonColor[1], 2:buttonColor[2], 3:buttonColor[3], 4:'#00b2ca', 5:buttonColor[5]});
 
     const sendHome = (event) =>
-        //navigate(\home);
+        //navigate(/home);
         console.log("Sending home")
 
     const sendToSchedule = (event) =>
-        //navigate(\appointments);
+        //navigate('/schedule');
         console.log('sending to schedule page')
 
     const sendToMessages = (event) =>
         console.log('sending to messages page')
 
     const sendToPatientLookup = (event) =>
-        //navigate(\prescriptions);
+        //navigate(/prescriptions);
         console.log('sending to patient lookup page')
 
     const sendToAcc = (event) =>
-        //navigate(\account)
+        //navigate(/account)
         console.log('sending to account')
 
     return(

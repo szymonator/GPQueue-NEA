@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import Stack from "./stack";
 
 const UserContext = createContext();
 
@@ -8,7 +7,9 @@ export const UserProvider = ({ children }) => {
     const [cookies, setCookies] = useState({
         type: null,
         name: null,
-        id: null
+        id: null,
+        prevPageStack: new Stack(),
+        currentPage: null
     });
 
     return (
