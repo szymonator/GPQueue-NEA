@@ -37,14 +37,15 @@ CREATE TABLE IF NOT EXISTS Appointments (
 
 CREATE TABLE IF NOT EXISTS Messages (
     message_id SERIAL PRIMARY KEY,
-    sender_id INTEGER NOT NULL,
-    recipient_id INTEGER NOT NULL,
+    patient_id INTEGER NOT NULL,
+    staff_id INTEGER NOT NULL,
+    msg_direction VARCHAR(20) NOT NULL CHECK (msg_direction IN ('s->p', 'p->s')),
     subject TEXT,
     msg_text TEXT,
     msg_sent TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(20) NOT NULL CHECK (status IN ('unseen', 'seen')),
-    FOREIGN KEY (sender_id) REFERENCES "Users"(user_id),
-    FOREIGN KEY (recipient_id) REFERENCES "Users"(user_id)
+    FOREIGN KEY (patient_id) REFERENCES Patient_Details(patient_id),
+    FOREIGN KEY (staff_id) REFERENCES Staff_Details(staff_id)
 );
 
 CREATE VIEW Patient_View AS

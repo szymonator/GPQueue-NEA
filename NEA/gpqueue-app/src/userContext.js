@@ -8,8 +8,9 @@ export const UserProvider = ({ children }) => {
         type: null,
         name: null,
         id: null,
-        prevPageStack: new Stack(),
-        currentPage: null
+        prevPageStack: [],
+        currentPage: null,
+        backUsed : false,
     });
 
     return (

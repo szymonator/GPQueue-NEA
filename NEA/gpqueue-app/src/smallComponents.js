@@ -1,6 +1,7 @@
 import React from "react";
-import {useState, useEffect, useNavigate} from "react";
+import {useState, useEffect, memo} from "react";
 import { useUser } from "./userContext";
+import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import Stack from "./stack";
 
 export{
@@ -9,7 +10,7 @@ export{
     hubOrSub,
 }
 
-function Timer() {
+const Timer = memo(function Timer() {
 
     const [time, setTime] = useState(new Date());
     const formattedTime = time.toLocaleTimeString()
@@ -30,34 +31,44 @@ function Timer() {
 
     return(
         <>
-            <p style={{marginLeft:'10px'}}>{formattedDate} {formattedTime}</p>
+            <p className={'Timer'}>{formattedDate} {formattedTime}</p>
         </>
     );
-}
+});
 
 
 function Back() {
 
+    let navigate = useNavigate();
     let { cookies, setCookies } = useUser();
-    const navigate = useNavigate();
+    const prevPageStack = new Stack();
 
     const handleClick = (event) => {
-        let prevPage = cookies.prevPageStack.pop()
+
+        prevPageStack.items = cookies.prevPageStack || [];
+        //let currentPage = prevPageStack.pop()
+        let prevPage = prevPageStack.pop()
+
         let newCookies = {
             type: cookies.type,
             name: cookies.name,
             id: cookies.id,
-            prevPageStack: cookies.prevPageStack, //TODO - HYDRATE STACK AND POP FROM TOP, THEN DEHYDRATE IT BACK
-            currentPage: prevPage
+            prevPageStack: prevPageStack.items, 
+            currentPage: prevPage,
+            backUsed: true
         }
-        setCookies(newCookies)
-        navigate('/'+prevPage)
+
+        console.log('prevPage')
+        setCookies(newCookies);
+        navigate('/'+prevPage);
     }
 
     return(
         <>
-        <div className={'Back'} onClick={handleClick}>
+        <div onClick={handleClick}>
+        <div className={'Back'} >
             <h3>Back</h3>
+        </div>
         </div>
         </>
     );
@@ -75,25 +86,38 @@ function hubOrSub(pageName, cookies) { //UPON CALLING THIS FUNCTION, PASS IN THE
         'home':'hub',
         'appointments':'hub',
         'futureAppointments':'sub',
-        'pastAppointments':'sub'
+        'pastAppointments':'sub',
+        'BookAppointment1':'sub',
+        'BookAppointment2':'sub',
+        'BookAppointment3':'sub',
     }
 
     let prevPageStack = new Stack();
-    prevPageStack.items = cookies.prevPageStack || [];
+    prevPageStack.items = cookies.prevPageStack || []; //stack hydration
+    let prevPage = cookies.currentPage
 
-    let pageType = hubOrSubDict[pageName];
-    if (pageType === 'hub') {
-        cookies.prevPageStack.purge()
-        cookies.prevPageStack.push(pageName)
-    } else {
-        cookies.prevPageStack.push(pageName)
+    //let oldPageType = hubOrSubDict[prevPage];
+    const newPageType = hubOrSubDict[pageName];
+
+    if (newPageType === 'hub') {
+        prevPageStack.purge()
+    } else if (newPageType === 'sub' && !cookies.backUsed) {
+        prevPageStack.push(prevPage)
     }
+
+    let backBool
+    if (cookies.backUsed) {
+        backBool = false;
+    }
+
+    console.log(prevPageStack.items, pageName)
 
     return {
         type: cookies.type,
         name: cookies.name,
         id: cookies.id,
-        prevPageStack: prevPageStack.items,
-        currentPage: pageName
+        prevPageStack: prevPageStack.items, //technically stack dehydration
+        currentPage: pageName,
+        backUsed: backBool,
     }
 }

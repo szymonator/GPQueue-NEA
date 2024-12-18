@@ -37,8 +37,8 @@ function Login() {
             type: type,
             name: name,
             id: id,
-            prevPageStack: new Stack(),
-            currentPage: 'home'
+            prevPageStack: [],
+            currentPage: null
         });
 
         navigate('/home')
@@ -69,19 +69,16 @@ function Register() {
 
     //let [details, setDetails] = useState({Email:'', Password:'', fName:'', sName:'', DOB:'', pNumber:null, staff:false});
     let [opacity, setOpacity] = useState(0);
-    let [staffBool, setStaffBool] = useState(false);
+    let [type, setType] = useState('patient');
     const { setCookies } = useUser();
     const navigate = useNavigate();
-    let type
 
     function applyPatient() {
-        type = 'patient'
+        setType('patient');
     }
 
     function applyStaff() {
-        console.log('onclick');
-        setStaffBool(true);
-        type = 'staff'
+        setType('staff');
     }
 
     function handleSubmit(event) {
@@ -106,7 +103,7 @@ function Register() {
                 sName: sname,
                 DOB: dob,
                 pNumber: pnumber,
-                staffBool: staffBool
+                type: type
             };
             //setDetails(temp_details);
             console.log("Registration submitted", temp_details)
@@ -118,6 +115,8 @@ function Register() {
                 type: type,
                 name: fname+' '+sname,
                 id: id,
+                prevPageStack: [],
+                currentPage: null
             });
 
             if (type === 'patient') {

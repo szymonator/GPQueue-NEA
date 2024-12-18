@@ -22,7 +22,7 @@ export default class Stack {
     }
 
     pop(){
-        if (this.isEmpty) {
+        if (this.isEmpty()) {
             throw new Error('Stack is empty!')
         } else {
             const rear = this.items[this.items.length-1]
@@ -32,7 +32,7 @@ export default class Stack {
     }
 
     peek(){
-        if (this.isEmpty) {
+        if (this.isEmpty()) {
             throw new Error('Stack is empty!')
         } else {
             return this.items[this.items.length-1]
@@ -41,7 +41,8 @@ export default class Stack {
 
     purge(){
         while (true) {
-            if (this.isEmpty) {
+            if (this.isEmpty()) {
+                console.log('purged')
                 return
             } else {
                 this.items.pop()

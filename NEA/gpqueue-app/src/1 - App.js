@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { UserProvider } from "./userContext";
 import {Login, Register, StaffApproval} from "./3 - login"
 import { Homepage } from './2 - home';
-import { AppointmentsHome } from './5 - appointments';
+import { AppointmentsHome, BookAppointment1, BookAppointment2 } from './5 - appointments';
 
 export default function App() {
   return (
@@ -17,6 +17,10 @@ export default function App() {
           <Route path="/home" element={<Homepage />} />
           <Route path="/staffApproval" element={<StaffApproval />} />
           <Route path="/appointments" element={<AppointmentsHome />} />
+          <Route path="/BookAppointment1" element={<BookAppointment1 />} />
+          <Route path="/BookAppointment2" element={<BookAppointment2 />} />
+
+
         </Routes>
       </Router>
     </UserProvider>

@@ -72,6 +72,35 @@
   border-radius: 50px;
   width: 100px;
   background-color: #00b2ca;
-  position: relative;
   float: right;
+  position: absolute;
+  top: 10px; /* Adjust as needed */
+  left: 10px; /* Adjust as needed */
+}
+
+.reset {
+  all: unset;
+  position: relative;
+  float: left;
+}
+
+.reasonList {
+  flex: 50%;
+  border-style: solid;
+  border-color: #2e3532;
+  margin: 5px;
+  width: 300px;
+}
+
+.reason {
+  border-style: solid;
+  border-width: 2px;
+  border-color: #2e3532;
+}
+
+.Timer {
+  float: right;
+  position: absolute;
+  bottom: 10px; /* Adjust as needed */
+  left: 10px; /* Adjust as needed */
 }
