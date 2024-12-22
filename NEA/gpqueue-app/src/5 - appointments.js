@@ -109,20 +109,20 @@ function BookAppointment1() {
                     
                     <div className={'Row'}>
                     <div className={'reasonList'}>
-                        <div className={'reason'} onClick={() => (setPriority(1), setReason('Persistent fever'))}>Persistent fever</div>
-                        <div className={'reason'} onClick={() => (setPriority(1), setReason('Severe sore throat'))}>Severe sore throat</div>
-                        <div className={'reason'} onClick={() => (setPriority(1), setReason('Ear pain'))}>Ear pain</div>
-                        <div className={'reason'} onClick={() => (setPriority(1), setReason('Abdominal pain'))}>Abdominal pain</div>
-                        <div className={'reason'} onClick={() => (setPriority(1), setReason('Concerning lumps'))}>Concerning lumps</div>
-                        <div className={'reason'} onClick={() => (setPriority(1), setReason('Anxiety/Depression (worsening)'))}>Anxiety/Depression (worsening)</div>
-                        <div className={'reason'} onClick={() => (setPriority(1), setReason('Unexplained weight loss'))}>Unexplained weight loss</div>
-                        <div className={'reason'} onClick={() => (setPriority(1), setReason('UTI or STI symptoms'))}>UTI or STI symptoms</div>
-                        <div className={'reason'} onClick={() => (setPriority(1), setReason('Worsening chest infection'))}>Worsening chest infection</div>
-                        <div className={'reason'} onClick={() => (setPriority(2), setReason('Sprained joint'))}>Sprained joint</div>
-                        <div className={'reason'} onClick={() => (setPriority(2), setReason('Ongoing migraines'))}>Ongoing migraines</div>
-                        <div className={'reason'} onClick={() => (setPriority(2), setReason('Skin rashes'))}>Skin rashes</div>
-                        <div className={'reason'} onClick={() => (setPriority(2), setReason('Chronic pain needing review'))}>Chronic pain needing review</div>
-                        <div className={'reason'} onClick={() => (setPriority(2), setReason('Digestive issues'))}>Digestive issues</div>
+                        <div className={'reason'} onClick={() => {setPriority(1); setReason('Persistent fever')}}>Persistent fever</div>
+                        <div className={'reason'} onClick={() => {setPriority(1); setReason('Severe sore throat')}}>Severe sore throat</div>
+                        <div className={'reason'} onClick={() => {setPriority(1); setReason('Ear pain')}}>Ear pain</div>
+                        <div className={'reason'} onClick={() => {setPriority(1); setReason('Abdominal pain')}}>Abdominal pain</div>
+                        <div className={'reason'} onClick={() => {setPriority(1); setReason('Concerning lumps')}}>Concerning lumps</div>
+                        <div className={'reason'} onClick={() => {setPriority(1); setReason('Anxiety/Depression (worsening)')}}>Anxiety/Depression (worsening)</div>
+                        <div className={'reason'} onClick={() => {setPriority(1); setReason('Unexplained weight loss')}}>Unexplained weight loss</div>
+                        <div className={'reason'} onClick={() => {setPriority(1); setReason('UTI or STI symptoms')}}>UTI or STI symptoms</div>
+                        <div className={'reason'} onClick={() => {setPriority(1); setReason('Worsening chest infection')}}>Worsening chest infection</div>
+                        <div className={'reason'} onClick={() => {setPriority(2); setReason('Sprained joint')}}>Sprained joint</div>
+                        <div className={'reason'} onClick={() => {setPriority(2); setReason('Ongoing migraines')}}>Ongoing migraines</div>
+                        <div className={'reason'} onClick={() => {setPriority(2); setReason('Skin rashes')}}>Skin rashes</div>
+                        <div className={'reason'} onClick={() => {setPriority(2); setReason('Chronic pain needing review')}}>Chronic pain needing review</div>
+                        <div className={'reason'} onClick={() => {setPriority(2); setReason('Digestive issues')}}>Digestive issues</div>
                     </div>
 
                     <div className={'reasonList'}>
@@ -173,20 +173,75 @@ function BookAppointment2() {
     // BACKEND SHOULD SEND AN OBJECT IN THE FORM OF SOMETHING LIKE THIS (WHERE TRUE MEANS AT LEAST ONE APPT IS AVAILABLE,
     // AND FALSE MEANS THERE ISN'T ONE):
 
-    const dates = testDates // IMPORTED FROM testData.js
+    const fullDates = testDates // IMPORTED FROM testData.js
+    const [ currentDates, setCurrentDates ] = useState(fullDates[0]);
+
+    const now = new Date()
+    const months = ['January', 'February', 'March', 'April', 'May', 'June','July', 'August', 'September', 'October', 'November', 'December'];
+    const [ month, setMonth ] = useState(months[now.getMonth()])
+    
+    const [ selection, setSelection] = useState(''); 
+
+    const handleSelect = (date) => {
+        if (!selection.includes(date)) {
+            setSelection(selection + date+', ')
+        } else {
+            setSelection(selection.replace(date+', ', ''))
+        }}
+
+    const group = useRef(0)
+
+    const handlePrevious = (event) => {
+        if (group.current > 0) {
+            setCurrentDates(fullDates[group.current-1])
+            setMonth(months[Object.entries(fullDates[group.current-1])[0][0].slice(3,5)-1])
+            group.current -= 1
+        }}
+
+    const handleNext = (event) => {
+        if (group.current < 2) {
+            setCurrentDates(fullDates[group.current+1])
+            setMonth(months[Object.entries(fullDates[group.current+1])[0][0].slice(3,5)-1])
+            group.current += 1
+        }}
+
+    const handleContinue = (event) => {
+        console.log('next page time wowsers!')
+    }
 
     return(
         <>
         <div style={{ position: "relative", width: "100%" }}>
             <Back />
-            <div className="centerPage">
-
+            <h1 style={{'textAlign':'center'}}>Booking (part 2)</h1>
+            <h2 style={{'textAlign':'center'}}>Select your preferred days</h2>
+            <div className="centerPage" style={{'flexDirection':'row', 'justifyContent':'left', 'gap':'200px'}}>
                 <div className={'Calendar'}>
-                    Lots of smaller divs inside, each being a single date!
-                    Each div should have the date number (1,2,3,4...)
-                    The month will be displayed alongside the calendar
+                    {Object.entries(currentDates).map(([date, dateBool]) => (
+                    <div key={date} className='day' 
+                    onClick={dateBool ? () => handleSelect(date) : undefined} // Only call if available
+                    style={{'backgroundColor': dateBool ? "#90ee90" : "#d3d3d3",
+                                                'pointerEvents': dateBool ? "auto" : "none",
+                                                'cursor': dateBool ? "pointer" : "not-allowed"}}>
+                        <p style={{'marginTop':'5px'}}>{date}</p>
+                    </div>
+                    ))}
                 </div>
-
+                    <div style={{'display':'flex', 'flexDirection':'column', 'justifyContent':'center', 'gap':'35px', 'flexWrap':'wrap', 'alignItems':'center'}}>
+                        <h3>Current month: {month}</h3>
+                        <div style={{'maxWidth':'505px', 'textAlign':'center'}}>
+                            <p>Days selected: {selection}</p>
+                        </div>
+                        <div className={'buttonDiv'} onClick={handlePrevious}>
+                            <p>Previous Month</p>
+                        </div>
+                        <div className={'buttonDiv'} onClick={handleNext}>
+                            <p>Next Month</p>
+                        </div>
+                        <div className={'buttonDiv'} style={{'width':'200px'}} onClick={handleContinue}>
+                            <p>Continue</p>
+                        </div>
+                    </div>
             </div>
         </div>
             <Timer />

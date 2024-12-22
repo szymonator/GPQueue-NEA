@@ -1,4 +1,4 @@
-export const testDates = {
+export const testDates = [{
     '01/12/2024': false,
     '02/12/2024': false,
     '03/12/2024': false,
@@ -30,6 +30,8 @@ export const testDates = {
     '29/12/2024': true,
     '30/12/2024': true,
     '31/12/2024': false,
+    },
+    {
     '01/01/2025': true,
     '02/01/2025': true,
     '03/01/2025': false,
@@ -61,6 +63,8 @@ export const testDates = {
     '29/01/2025': true,
     '30/01/2025': true,
     '31/01/2025': false,
+    },
+    {
     '01/02/2025': true,
     '02/02/2025': true,
     '03/02/2025': false,
@@ -89,4 +93,4 @@ export const testDates = {
     '26/02/2025': true,
     '27/02/2025': true,
     '28/02/2025': false,
-};
+}]

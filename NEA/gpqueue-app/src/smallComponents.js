@@ -58,7 +58,6 @@ function Back() {
             backUsed: true
         }
 
-        console.log('prevPage')
         setCookies(newCookies);
         navigate('/'+prevPage);
     }
@@ -96,7 +95,6 @@ function hubOrSub(pageName, cookies) { //UPON CALLING THIS FUNCTION, PASS IN THE
     prevPageStack.items = cookies.prevPageStack || []; //stack hydration
     let prevPage = cookies.currentPage
 
-    //let oldPageType = hubOrSubDict[prevPage];
     const newPageType = hubOrSubDict[pageName];
 
     if (newPageType === 'hub') {
@@ -109,8 +107,6 @@ function hubOrSub(pageName, cookies) { //UPON CALLING THIS FUNCTION, PASS IN THE
     if (cookies.backUsed) {
         backBool = false;
     }
-
-    console.log(prevPageStack.items, pageName)
 
     return {
         type: cookies.type,

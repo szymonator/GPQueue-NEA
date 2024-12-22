@@ -42,7 +42,6 @@ export default class Stack {
     purge(){
         while (true) {
             if (this.isEmpty()) {
-                console.log('purged')
                 return
             } else {
                 this.items.pop()

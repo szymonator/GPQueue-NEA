@@ -84,7 +84,6 @@ function Register() {
     function handleSubmit(event) {
 
         event.preventDefault()
-        console.log('submission')
         const form = event.target;
         let password = form.elements.password.value;
         let cpassword = form.elements.cpassword.value;
@@ -127,7 +126,6 @@ function Register() {
 
         } else {
             setOpacity(1);
-            console.log(password, cpassword)
         }
         
     }
