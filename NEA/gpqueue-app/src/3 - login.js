@@ -5,7 +5,7 @@ import {useState} from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 // eslint-disable-next-line
 import { Homepage } from './2 - home';
-import { useUser } from './userContext';
+import { useCookies } from './userContexts';
 import Stack from './stack';
 
 export{
@@ -17,7 +17,7 @@ export{
 function Login() {
 
     const navigate = useNavigate();
-    const { setCookies } = useUser();
+    const { setCookies } = useCookies();
 
     function handleSubmit(event) {
 
@@ -70,7 +70,7 @@ function Register() {
     //let [details, setDetails] = useState({Email:'', Password:'', fName:'', sName:'', DOB:'', pNumber:null, staff:false});
     let [opacity, setOpacity] = useState(0);
     let [type, setType] = useState('patient');
-    const { setCookies } = useUser();
+    const { setCookies } = useCookies();
     const navigate = useNavigate();
 
     function applyPatient() {
@@ -109,6 +109,8 @@ function Register() {
 
             //API STUFF TO REGISTER USER, AND FETCH ID
             let id = '1625'
+            fname = 'Szymon'
+            sname = 'Galutowksi'
 
             setCookies({
                 type: type,

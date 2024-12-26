@@ -1,16 +1,18 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { UserProvider } from "./userContext";
+import { CookiesProvider, BookingProvider } from "./userContexts";
 import {Login, Register, StaffApproval} from "./3 - login"
 import { Homepage } from './2 - home';
-import { AppointmentsHome, BookAppointment1, BookAppointment2 } from './5 - appointments';
+import { AppointmentsHome, BookAppointment1, BookAppointment2, BookAppointment3, BookAppointment4, Timeout } from './5 - appointments';
 
 export default function App() {
   return (
-    <UserProvider>
+    <CookiesProvider>
+      <BookingProvider>
       <Router>
         <Routes>
           <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/null" element={<Navigate to="/login" />} />
 
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -19,11 +21,14 @@ export default function App() {
           <Route path="/appointments" element={<AppointmentsHome />} />
           <Route path="/BookAppointment1" element={<BookAppointment1 />} />
           <Route path="/BookAppointment2" element={<BookAppointment2 />} />
-
+          <Route path="/BookAppointment3" element={<BookAppointment3 />} />
+          <Route path="/BookAppointment4" element={<BookAppointment4 />} />
+          <Route path="/timeout" element={<Timeout />} />
 
         </Routes>
       </Router>
-    </UserProvider>
+      </BookingProvider>
+    </CookiesProvider>
   );
 }
 

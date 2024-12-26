@@ -6,13 +6,16 @@ import {useEffect, useState, useRef} from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import { Timer, Back, hubOrSub } from './smallComponents.js';
 import { PatientTopBar, StaffTopBar } from './4 - topBar.js'
-import { useUser } from "./userContext";
-import { testDates } from './testData.js';
+import { useCookies, useBooking } from "./userContexts.js";
+import { testDates, testAppts } from './testData.js';
 
 export{
     AppointmentsHome,
     BookAppointment1,
     BookAppointment2,
+    BookAppointment3,
+    BookAppointment4,
+    Timeout
 }
 
 function AppointmentsHome() {
@@ -20,12 +23,12 @@ function AppointmentsHome() {
     const navigate = useNavigate();
     const hasRun = useRef(false);
 
-    let { cookies, setCookies } = useUser();
+    let { cookies, setCookies } = useCookies();
     useEffect(() => {
         if (!hasRun.current) {
             setCookies(hubOrSub('appointments', cookies));
             hasRun.current = true
-        }},[])
+        }})
 
     //API STUFF TO GET APPOINTMENT AMOUNT WOW!
     let appointmentAmount = 'X'
@@ -80,7 +83,10 @@ function BookAppointment1() {
 
     const [ priority, setPriority ] = useState(3);
     const [ reason, setReason ] = useState('');
-    const { cookies, setCookies } = useUser();
+    const { cookies, setCookies } = useCookies();
+    const { bookingData, setBookingData } = useBooking();
+    const tempData = bookingData
+    const [ opacity, setOpacity ] = useState(0);
     const navigate = useNavigate();
 
     const hasRun = useRef(false);
@@ -88,25 +94,40 @@ function BookAppointment1() {
     useEffect(() => {
         if (!hasRun.current) {
             setCookies(hubOrSub('BookAppointment1', cookies));
+            if (tempData.reason != '') {
+                setReason(tempData.reason)
+            }
             hasRun.current = true
-        }},[])
-
+        }})
+    
 
     const sendToNext = (event) => {
-        navigate('/BookAppointment2')
+        
+        if (reason === '') {
+            setOpacity(100)
+        } else {
+
+            setBookingData({
+                priority: priority,
+                reason: reason,
+                dates: tempData.dates,
+                times: tempData.times
+            })
+            navigate('/BookAppointment2')
+        }
+        
     }
 
 
     return(
         <>
-            <div style={{ position: "relative", width: "100%" }}>
+            <div style={{ position: "relative", width: "100%", 'textAlign':'center' }}>
                 <Back />
-                <div className="centerPage">
-
-                    <h1 style={{'marginTop':'75px'}}>Booking (Part 1)</h1>
-                    <h2>Choose your main reason for making an appointment.</h2>
-                    <h3>Reason: {reason}</h3>
-                    
+                <h1>Booking (Part 1)</h1>
+                <h2>Choose your main reason for making an appointment.</h2>
+                <h3>Reason: {reason}</h3>
+                <h3 style={{'color':'red', opacity:opacity}}>Please choose a reason before proceeding!</h3>
+                <div className="centerPage" style={{'height':'65vh'}}>
                     <div className={'Row'}>
                     <div className={'reasonList'}>
                         <div className={'reason'} onClick={() => {setPriority(1); setReason('Persistent fever')}}>Persistent fever</div>
@@ -157,20 +178,29 @@ function BookAppointment1() {
 
 function BookAppointment2() {
 
+    const navigate = useNavigate();
+
     const hasRun = useRef(false);
-    let { cookies, setCookies } = useUser();
+    let { cookies, setCookies } = useCookies();
+    const { bookingData, setBookingData } = useBooking();
+    const tempData = bookingData
+    const [ selection, setSelection] = useState(''); 
+    const [ opacity, setOpacity ] = useState(0);
 
     useEffect(() => {
         if (!hasRun.current) {
             setCookies(hubOrSub('BookAppointment2', cookies));
+            if (tempData.dates != '') {
+                setSelection(tempData.dates)
+            }
             hasRun.current = true
-        }},[])
+        }})
 
     // BIG API STUFF TO FETCH AVAILABLE DAYS DATA FOR 2 MONTHS FORWARDS (INCLUDING THE CURRENT ONE)
     // THEREFORE IF THIS MONTH IS DEC, THEN APPTS FROM JAN AND FEB ARE ALSO FETCHED AS WELL AS DEC
 
     // BACKEND ALGORITHM SHOULD TAKE INTO ACCOUNT THE DAYS OF THE CURRENT MONTH THAT HAVE PASSED ALREADY.
-    // BACKEND SHOULD SEND AN OBJECT IN THE FORM OF SOMETHING LIKE THIS (WHERE TRUE MEANS AT LEAST ONE APPT IS AVAILABLE,
+    // BACKEND SHOULD SEND AN OBJECT IN THE FORM OF SOMETHING LIKE IN testData.js (WHERE TRUE MEANS AT LEAST ONE APPT IS AVAILABLE,
     // AND FALSE MEANS THERE ISN'T ONE):
 
     const fullDates = testDates // IMPORTED FROM testData.js
@@ -179,8 +209,6 @@ function BookAppointment2() {
     const now = new Date()
     const months = ['January', 'February', 'March', 'April', 'May', 'June','July', 'August', 'September', 'October', 'November', 'December'];
     const [ month, setMonth ] = useState(months[now.getMonth()])
-    
-    const [ selection, setSelection] = useState(''); 
 
     const handleSelect = (date) => {
         if (!selection.includes(date)) {
@@ -206,8 +234,19 @@ function BookAppointment2() {
         }}
 
     const handleContinue = (event) => {
-        console.log('next page time wowsers!')
-    }
+        if (selection === '') {
+            setOpacity(100);
+        } else {
+
+            setBookingData({
+                priority: tempData.priority,
+                reason: tempData.reason,
+                dates: selection,
+                times: tempData.times,
+            })
+
+            navigate('/BookAppointment3')
+        }}
 
     return(
         <>
@@ -222,16 +261,18 @@ function BookAppointment2() {
                     onClick={dateBool ? () => handleSelect(date) : undefined} // Only call if available
                     style={{'backgroundColor': dateBool ? "#90ee90" : "#d3d3d3",
                                                 'pointerEvents': dateBool ? "auto" : "none",
-                                                'cursor': dateBool ? "pointer" : "not-allowed"}}>
+                                                'cursor': dateBool ? "pointer" : "not-allowed",
+                                                'borderRadius':'5px'}}>
                         <p style={{'marginTop':'5px'}}>{date}</p>
                     </div>
                     ))}
                 </div>
-                    <div style={{'display':'flex', 'flexDirection':'column', 'justifyContent':'center', 'gap':'35px', 'flexWrap':'wrap', 'alignItems':'center'}}>
+                    <div style={{'display':'flex', 'flexDirection':'column', 'justifyContent':'center', 'gap':'10px', 'flexWrap':'wrap', 'alignItems':'center'}}>
                         <h3>Current month: {month}</h3>
                         <div style={{'maxWidth':'505px', 'textAlign':'center'}}>
                             <p>Days selected: {selection}</p>
                         </div>
+                        <p style={{'color':'red', 'opacity':opacity}}>Please select at least one day before continuing!</p>
                         <div className={'buttonDiv'} onClick={handlePrevious}>
                             <p>Previous Month</p>
                         </div>
@@ -245,6 +286,191 @@ function BookAppointment2() {
             </div>
         </div>
             <Timer />
+        </>
+    );
+}
+
+
+
+
+function BookAppointment3() {
+
+    const hasRun = useRef(false);
+    let { cookies, setCookies } = useCookies();
+    const navigate = useNavigate();
+    const { bookingData, setBookingData } = useBooking();
+    const tempData = bookingData
+    const [ selection, setSelection] = useState(''); 
+    const [ opacity, setOpacity ] = useState(0);
+
+    useEffect(() => {
+        if (!hasRun.current) {
+            setCookies(hubOrSub('BookAppointment3', cookies));
+            hasRun.current = true
+        }})
+
+    const handleSelect = (time) => {
+        if (!selection.includes(time)) {
+            setSelection(selection + time+', ')
+        } else {
+            setSelection(selection.replace(time+', ', ''))
+        }}
+
+    const handleContinue = (event) => {
+        if (selection === '') {
+            setOpacity(100);
+        } else {
+
+            setBookingData({
+                priority: tempData.priority,
+                reason: tempData.reason,
+                dates: tempData.dates,
+                times: selection,
+            })
+
+            navigate('/BookAppointment4')
+        }}
+
+
+    return(
+        <>
+            <div style={{ position: "relative", width: "100%" }}>
+                <Back />
+                <h1 style={{'textAlign':'center'}}>Booking (part 3)</h1>
+                <h2 style={{'textAlign':'center'}}>Select your preferred timeframes</h2>
+                <div className="centerPage" style={{'flexDirection':'row', 'justifyContent':'left', 'alignItems':'center'}}>
+                    <div className={'Column'} style={{'display':'flex', 'alignItems':'center', 'flexDirection':'column', 'gap':'20px'}}>
+                        <div className={'buttonDiv'} style={{'backgroundColor':'white'}} onClick={() => {handleSelect('9:00-13:00')}}>
+                            <h3>9:00 - 13:00</h3>
+                        </div>
+                        <div className={'buttonDiv'} style={{'backgroundColor':'white'}} onClick={() => {handleSelect('13:00-17:00')}}>
+                            <h3>13:00 - 17:00</h3>
+                        </div>
+                        <div className={'buttonDiv'} style={{'backgroundColor':'white'}} onClick={() => {handleSelect('17:00-21:00')}}>
+                            <h3>17:00 - 21:00</h3>
+                        </div>
+                    </div>
+                    <div className={'Column'} style={{'display':'flex', 'alignItems':'center', 'flexDirection':'column', 'gap':'20px'}}>
+                        <p>Selection: {selection}</p>
+                        <p style={{'color':'red', 'opacity':opacity}}>Please select at least one timeframe!</p>
+                        <div className='buttonDiv' onClick={handleContinue}>
+                            <h3>Continue</h3>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <Timer />
+        </>
+    );
+}
+
+
+
+function BookAppointment4() {
+
+    const hasRun = useRef(false);
+    let { cookies, setCookies } = useCookies();
+    const navigate = useNavigate();
+    const { bookingData, setBookingData } = useBooking();
+    const tempData = bookingData
+
+    useEffect(() => {
+        if (!hasRun.current) {
+            setCookies(hubOrSub('BookAppointment3', cookies));
+            hasRun.current = true
+        }})
+
+
+    // MAGIC API STUFF TO CALL ALL THE FINAL APPOINTMENT DATA BY SENDING THE CONTENTS OF tempData TO THE BACKEND.
+    // APPOINTMENTS RETURNED SHOULD BE RETURNED LIKE testAppts FROM testData.js
+    const apptsList = testAppts
+    let currentAppt = apptsList.shift()
+
+    const [ date, setDate ] = useState(String(currentAppt[1]));
+    const [ timeframe, setTimeframe ] = useState(String(currentAppt[2]));
+    const [ dr, setDr ] = useState(String(currentAppt[3]));
+    const [ countdown, setCountdown ] = useState(120);
+    const [ rerolls, setRerolls ] = useState(apptsList.length);
+
+    useEffect(() => {
+
+        const interval = setInterval(() => {
+            setCountdown(countdown => countdown-1)
+        }, 1000)
+
+        if (countdown < 1) {
+            navigate('/timeout')
+        }
+
+        return () => clearInterval(interval);
+    })
+
+    const handleReroll = () => {
+        if (rerolls > 0) {
+            setCountdown(120)
+            setRerolls(rerolls => rerolls-1)
+            currentAppt = apptsList.shift()
+
+            setDate(String(currentAppt[1]))
+            setTimeframe(String(currentAppt[2]))
+            setDr(String(currentAppt[3]))
+        }
+        else {
+            navigate('/finish') // SEND USER TO PAGE SAYING THAT THEY RAN OUT OF CHOICES AND SHOULD TRY AGAIN
+        }
+    }
+
+    const handleNext = () => {
+        console.log('not implemented yet nerd')
+
+        // SEND currentAppt TO THE BACKEND FOR THEM TO SAVE IN THE DB
+
+        navigate('/appointments')
+    }
+
+
+    return(
+        <>
+            <div style={{ position: "relative", width: "100%" }}>
+                <Back />
+                <h1 style={{'textAlign':'center'}}>Summary - Booking (part 4)</h1>
+                <h2 style={{'textAlign':'center'}}>Confirm this appointment choice or reroll</h2>
+                <div className="centerPage" style={{'flexDirection':'center', 'justifyContent':'center', 'alignItems':'center', 'gap':'0px'}}>
+
+                    <h3>Date: {date}</h3>
+                    <h3>Time: {timeframe}</h3>
+                    <h3>Doctor: Dr {dr}</h3>
+                    <p style={{'color':'red'}}>You have {String(Math.floor(countdown/60)) +':'+String(countdown%60).padStart(2, '0')} left to lock your choice in, or to reroll for another appointment time.</p>
+                    <p>Rerolls left: {rerolls}</p>
+                    <div style={{'display':'flex', 'flexDirection':'row' ,'gap':'5px', 'justifyContent':'center', 'alignItems':'center'}}>
+                        <div className={'buttonDiv'} onClick={handleNext}><h3>Continue</h3></div>
+                        <div className={'buttonDiv'} onClick={handleReroll}><h3>Reroll</h3></div>
+                    </div>
+                </div>
+            </div>
+            <Timer />
+        </>
+    );
+}
+
+
+
+
+function Timeout() {
+
+    const navigate = useNavigate();
+    const handleClick = () => {navigate('/home')}
+
+    return(
+        <>
+            <div>
+                <div className={'centerPage'} style={{'display':'flex', 'flexDirection':'column', 'alignItems':'center', 'justifyContent':'center'}}>
+                    <h1>You took too long to make a choice, try again with different options.</h1>
+                    <div className={'buttonDiv'} onClick={handleClick}><h1>Go to the Homepage</h1></div>
+                </div>
+                <Timer/>
+            </div>
         </>
     );
 }

@@ -82,6 +82,7 @@
   position: absolute;
   top: 10px; /* Adjust as needed */
   left: 10px; /* Adjust as needed */
+  cursor: pointer;
 }
 
 .reasonList {

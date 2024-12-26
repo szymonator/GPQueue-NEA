@@ -5,7 +5,7 @@ import {useState} from "react";
 // eslint-disable-next-line
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import { Timer } from './smallComponents.js';
-import { useUser } from "./userContext";
+import { useCookies } from "./userContexts.js";
 
 export{
     PatientTopBar,
@@ -14,7 +14,7 @@ export{
 
 function PatientTopBar() {
 
-    let { cookies } = useUser();
+    let { cookies } = useCookies();
     const patientName = cookies.name;
     let [buttonColor, setButtonColor] = useState({1:'#00B2CA', 2:'#00B2CA', 3:'#00B2CA', 4:'#00B2CA', 5:'#00B2CA'});
     const navigate = useNavigate();
@@ -90,7 +90,7 @@ function PatientTopBar() {
 
 function StaffTopBar() {
 
-    const { cookies } = useUser();
+    const { cookies } = useCookies();
     const staffName = cookies.name;
     let [buttonColor, setButtonColor] = useState({1:'#00B2CA', 2:'#00B2CA', 3:'#00B2CA', 4:'#00B2CA', 5:'#00B2CA'});
     const navigate = useNavigate();

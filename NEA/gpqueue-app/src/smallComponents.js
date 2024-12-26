@@ -1,6 +1,6 @@
 import React from "react";
 import {useState, useEffect, memo} from "react";
-import { useUser } from "./userContext";
+import { useCookies, useBooking } from "./userContexts";
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import Stack from "./stack";
 
@@ -39,14 +39,24 @@ const Timer = memo(function Timer() {
 
 function Back() {
 
-    let navigate = useNavigate();
-    let { cookies, setCookies } = useUser();
+    const navigate = useNavigate();
+    const { cookies, setCookies } = useCookies();
+    const { setBookingData } = useBooking();
     const prevPageStack = new Stack();
 
     const handleClick = (event) => {
 
+        if (cookies.currentPage === 'BookAppointment1') {
+            setBookingData({priority: null,
+                reason: '',
+                dates: '',
+                times: '',})
+
+            // maybe send some sort of API message to terminate processes if needed? idk, probably not
+        }
+
         prevPageStack.items = cookies.prevPageStack || [];
-        //let currentPage = prevPageStack.pop()
+        
         let prevPage = prevPageStack.pop()
 
         let newCookies = {
@@ -74,7 +84,7 @@ function Back() {
 
 }
 
-function hubOrSub(pageName, cookies) { //UPON CALLING THIS FUNCTION, PASS IN THE PAGE NAME AND THE COOKIES FROM USEUSER()
+function hubOrSub(pageName, cookies) { //UPON CALLING THIS FUNCTION, PASS IN THE PAGE NAME AND THE COOKIES FROM useCookies()
     
     //WE HAVE 2 TYPES OF PAGE, A HUB AND A SUB.
     // A HUB IS A PAGE WITH NO BACK BUTTONS, SUCH AS THE HOMEPAGE

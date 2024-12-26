@@ -2,10 +2,11 @@ import './App.css';
 import './smallComponents.js'
 import React from "react";
 import {useEffect, useRef} from "react";
+// eslint-disable-next-line
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import { Timer, hubOrSub} from './smallComponents.js';
 import { PatientTopBar, StaffTopBar } from './4 - topBar.js'
-import { useUser } from "./userContext";
+import { useCookies } from "./userContexts.js";
 
 export{
     Homepage
@@ -15,7 +16,7 @@ export{
 
 function Homepage() {
 
-    let { cookies, setCookies } = useUser();
+    let { cookies, setCookies } = useCookies();
     const hasRun = useRef(false);
     const navigate = useNavigate();
 
