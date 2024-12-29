@@ -3,6 +3,7 @@
 // quite similar to python OOP, but self -> this
 // this.items is the stacks items, stored as an array
 // arrays have a length attribute which i can call on this.items.length
+
 export default class Stack {
     
     constructor(){

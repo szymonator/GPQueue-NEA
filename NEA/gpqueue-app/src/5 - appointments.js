@@ -384,22 +384,22 @@ function BookAppointment4() {
 
     // MAGIC API STUFF TO CALL ALL THE FINAL APPOINTMENT DATA BY SENDING THE CONTENTS OF tempData TO THE BACKEND.
     // APPOINTMENTS RETURNED SHOULD BE RETURNED LIKE testAppts FROM testData.js
-    const apptsList = testAppts
-    let currentAppt = apptsList.shift()
+    const [ apptsList, setApptsList ] = useState(testAppts.slice(1))
 
-    const [ date, setDate ] = useState(String(currentAppt[1]));
-    const [ timeframe, setTimeframe ] = useState(String(currentAppt[2]));
-    const [ dr, setDr ] = useState(String(currentAppt[3]));
+    const [ currentAppt, setCurrentAppt ] = useState(testAppts[0])
     const [ countdown, setCountdown ] = useState(120);
     const [ rerolls, setRerolls ] = useState(apptsList.length);
+    const [ finish, setFinish ] = useState(false)
 
     useEffect(() => {
 
         const interval = setInterval(() => {
-            setCountdown(countdown => countdown-1)
+            setCountdown( (countdown) => countdown - 1)
         }, 1000)
 
         if (countdown < 1) {
+
+            // API STUFF TO TELL BACKEND TO REMOVE THE TAKEN APPTS FROM THE 'POSSIBLES' AREA.
             navigate('/timeout')
         }
 
@@ -409,15 +409,10 @@ function BookAppointment4() {
     const handleReroll = () => {
         if (rerolls > 0) {
             setCountdown(120)
-            setRerolls(rerolls => rerolls-1)
-            currentAppt = apptsList.shift()
-
-            setDate(String(currentAppt[1]))
-            setTimeframe(String(currentAppt[2]))
-            setDr(String(currentAppt[3]))
-        }
-        else {
-            navigate('/finish') // SEND USER TO PAGE SAYING THAT THEY RAN OUT OF CHOICES AND SHOULD TRY AGAIN
+            setRerolls( (rerolls) => rerolls - 1 )
+            setCurrentAppt(apptsList[0])
+            setApptsList(apptsList.slice(1))
+            console.log(apptsList.length)
         }
     }
 
@@ -429,23 +424,28 @@ function BookAppointment4() {
         navigate('/appointments')
     }
 
+    const handleExit = () => {
+        // // API STUFF TO TELL BACKEND TO REMOVE THE TAKEN APPTS FROM THE 'POSSIBLES' AREA.
+        navigate('/home')
+    }
+
 
     return(
         <>
             <div style={{ position: "relative", width: "100%" }}>
-                <Back />
+                <div className={'buttonDiv'} onClick={handleExit} style={{'width':'200px'}}><h3>Exit to Home</h3></div>
                 <h1 style={{'textAlign':'center'}}>Summary - Booking (part 4)</h1>
                 <h2 style={{'textAlign':'center'}}>Confirm this appointment choice or reroll</h2>
                 <div className="centerPage" style={{'flexDirection':'center', 'justifyContent':'center', 'alignItems':'center', 'gap':'0px'}}>
 
-                    <h3>Date: {date}</h3>
-                    <h3>Time: {timeframe}</h3>
-                    <h3>Doctor: Dr {dr}</h3>
+                    <h3>Date: {currentAppt[1]}</h3>
+                    <h3>Time: {currentAppt[2]}</h3>
+                    <h3>Doctor: Dr {currentAppt[3]}</h3>
                     <p style={{'color':'red'}}>You have {String(Math.floor(countdown/60)) +':'+String(countdown%60).padStart(2, '0')} left to lock your choice in, or to reroll for another appointment time.</p>
                     <p>Rerolls left: {rerolls}</p>
                     <div style={{'display':'flex', 'flexDirection':'row' ,'gap':'5px', 'justifyContent':'center', 'alignItems':'center'}}>
                         <div className={'buttonDiv'} onClick={handleNext}><h3>Continue</h3></div>
-                        <div className={'buttonDiv'} onClick={handleReroll}><h3>Reroll</h3></div>
+                        <div className={'buttonDiv'} onClick={handleReroll} style={{'pointerEvents': (rerolls===0)? 'none' : 'auto', 'cursor': (rerolls===0)? 'none' : 'pointer'}}><h3>Reroll</h3></div>
                     </div>
                 </div>
             </div>

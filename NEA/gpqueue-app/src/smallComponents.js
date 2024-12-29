@@ -2,7 +2,7 @@ import React from "react";
 import {useState, useEffect, memo} from "react";
 import { useCookies, useBooking } from "./userContexts";
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
-import Stack from "./stack";
+import  Stack  from "./stack";
 
 export{
     Timer,

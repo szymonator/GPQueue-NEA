@@ -24,7 +24,7 @@ function Homepage() {
     if (!hasRun.current) {
         setCookies(hubOrSub('home', cookies));
         hasRun.current = true
-    }}, [])
+    }})
 
     //retrieve amount of upcoming appointments, and amount of new messages in inbox
     let appointmentAmount = 'X'

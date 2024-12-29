@@ -94,15 +94,13 @@ function Register() {
             let fname = form.elements.fname.value;
             let sname = form.elements.sname.value;
             let dob = form.elements.dob.value;
-            let pnumber = form.elements.pnumber.value;
             let temp_details = {
-                Email: email,
-                Password: password,
-                fName: fname,
-                sName: sname,
-                DOB: dob,
-                pNumber: pnumber,
-                type: type
+                'fname': fname,
+                'sname': sname,
+                'email': email,
+                'password': password,
+                'dob': dob,
+                'type': type
             };
             //setDetails(temp_details);
             console.log("Registration submitted", temp_details)
@@ -155,7 +153,6 @@ function Register() {
             <p>First Name:</p><input name='fname'></input>
             <p>Surname:</p><input name='sname'></input>
             <p>Date of Birth (DD/MM/YYYY):</p><input name='dob'></input>
-            <p>Phone Number (optional):</p><input name='pnumber'></input>
         </div>
         </div>
         <button type='submit' onClick={applyPatient}>Register!</button>
