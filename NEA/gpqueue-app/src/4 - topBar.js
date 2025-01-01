@@ -4,7 +4,6 @@ import React from "react";
 import {useState} from "react";
 // eslint-disable-next-line
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
-import { Timer } from './smallComponents.js';
 import { useCookies } from "./userContexts.js";
 
 export{

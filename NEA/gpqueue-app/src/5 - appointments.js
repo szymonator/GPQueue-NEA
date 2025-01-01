@@ -24,6 +24,7 @@ function AppointmentsHome() {
     const hasRun = useRef(false);
 
     let { cookies, setCookies } = useCookies();
+    if (!cookies.authBool) {navigate('/login')};
     useEffect(() => {
         if (!hasRun.current) {
             setCookies(hubOrSub('appointments', cookies));
@@ -91,14 +92,15 @@ function BookAppointment1() {
 
     const hasRun = useRef(false);
 
+    if (!cookies.authBool) {navigate('/login')};
     useEffect(() => {
         if (!hasRun.current) {
             setCookies(hubOrSub('BookAppointment1', cookies));
-            if (tempData.reason != '') {
+            if (tempData.reason !== '') {
                 setReason(tempData.reason)
             }
             hasRun.current = true
-        }})
+        }}, [setCookies, cookies, tempData.reason])
     
 
     const sendToNext = (event) => {
@@ -187,14 +189,15 @@ function BookAppointment2() {
     const [ selection, setSelection] = useState(''); 
     const [ opacity, setOpacity ] = useState(0);
 
+    if (!cookies.authBool) {navigate('/login')};
     useEffect(() => {
         if (!hasRun.current) {
             setCookies(hubOrSub('BookAppointment2', cookies));
-            if (tempData.dates != '') {
+            if (tempData.dates !== '') {
                 setSelection(tempData.dates)
             }
             hasRun.current = true
-        }})
+        }}, [setCookies, cookies, tempData.dates])
 
     // BIG API STUFF TO FETCH AVAILABLE DAYS DATA FOR 2 MONTHS FORWARDS (INCLUDING THE CURRENT ONE)
     // THEREFORE IF THIS MONTH IS DEC, THEN APPTS FROM JAN AND FEB ARE ALSO FETCHED AS WELL AS DEC
@@ -303,6 +306,7 @@ function BookAppointment3() {
     const [ selection, setSelection] = useState(''); 
     const [ opacity, setOpacity ] = useState(0);
 
+    if (!cookies.authBool) {navigate('/login')};
     useEffect(() => {
         if (!hasRun.current) {
             setCookies(hubOrSub('BookAppointment3', cookies));
@@ -375,6 +379,7 @@ function BookAppointment4() {
     const { bookingData, setBookingData } = useBooking();
     const tempData = bookingData
 
+    if (!cookies.authBool) {navigate('/login')};
     useEffect(() => {
         if (!hasRun.current) {
             setCookies(hubOrSub('BookAppointment3', cookies));
@@ -389,7 +394,6 @@ function BookAppointment4() {
     const [ currentAppt, setCurrentAppt ] = useState(testAppts[0])
     const [ countdown, setCountdown ] = useState(120);
     const [ rerolls, setRerolls ] = useState(apptsList.length);
-    const [ finish, setFinish ] = useState(false)
 
     useEffect(() => {
 
@@ -426,6 +430,12 @@ function BookAppointment4() {
 
     const handleExit = () => {
         // // API STUFF TO TELL BACKEND TO REMOVE THE TAKEN APPTS FROM THE 'POSSIBLES' AREA.
+
+        setBookingData({priority: null,
+            reason: '',
+            dates: '',
+            times: '',})
+
         navigate('/home')
     }
 

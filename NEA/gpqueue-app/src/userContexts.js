@@ -8,10 +8,10 @@ export const CookiesProvider = ({ children }) => {
     const [cookies, setCookies] = useState({
         type: null,
         name: null,
-        id: null,
         prevPageStack: [],
         currentPage: null,
         backUsed : false,
+        authBool: false
     });
 
     return (

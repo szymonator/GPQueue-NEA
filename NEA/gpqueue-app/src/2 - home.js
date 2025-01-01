@@ -19,8 +19,12 @@ function Homepage() {
     let { cookies, setCookies } = useCookies();
     const hasRun = useRef(false);
     const navigate = useNavigate();
-
+    
     useEffect(() => {
+    console.log('at homepage', cookies.authBool)
+    if (!cookies.authBool) {
+        navigate('/login');
+    };
     if (!hasRun.current) {
         setCookies(hubOrSub('home', cookies));
         hasRun.current = true
@@ -31,7 +35,6 @@ function Homepage() {
     let messageAmount = 'X'
 
     const type = cookies.type;
-    const name = cookies.name;
 
     let topBar
     if (type === 'patient') {

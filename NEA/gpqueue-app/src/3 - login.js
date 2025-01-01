@@ -1,12 +1,11 @@
 import './App.css';
-import React, { useEffect } from "react";
+import React from "react";
 import {useState} from "react";
 // eslint-disable-next-line
-import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
-// eslint-disable-next-line
-import { Homepage } from './2 - home';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate, data, resolvePath } from "react-router-dom";
 import { useCookies } from './userContexts';
-import Stack from './stack';
+import { uponLogin, uponRegister } from './ApiCalls';
+
 
 export{
     Login,
@@ -18,30 +17,29 @@ function Login() {
 
     const navigate = useNavigate();
     const { setCookies } = useCookies();
+    const [ opacity, setOpacity ] = useState(0);
 
     function handleSubmit(event) {
 
         event.preventDefault()
         const form = event.target;
-        let email = form.elements.email.value;
-        let password = form.elements.password.value;
+        const email = form.elements.email.value;
+        const password = form.elements.password.value;
     
         console.log('Form submitted', { Email: email, Password: password });
 
-        //API AUTHENTICATION STUFF, AS ONE DOES
         let type = 'patient'
-        let name = 'Szymon Galutowski'
-        let id = '1625'
-
-        setCookies({
-            type: type,
-            name: name,
-            id: id,
-            prevPageStack: [],
-            currentPage: null
+        uponLogin(email, password, (name) => {
+            console.log('User name received:', name); 
+            setCookies({
+                type: type,
+                name: name,
+                prevPageStack: [],
+                currentPage: null,
+                authBool: true
+            });
+            navigate('/home')
         });
-
-        navigate('/home')
     }
 
     return(
@@ -58,17 +56,17 @@ function Login() {
                 </div>
                 <button type='submit'>Login!</button>
             </form>
+            <h2 style={{'color':'red', 'opacity':opacity}}>Invalid email or password, please try again.</h2>
         </div>
     );
 }
 
 
 
-
 function Register() {
 
-    //let [details, setDetails] = useState({Email:'', Password:'', fName:'', sName:'', DOB:'', pNumber:null, staff:false});
-    let [opacity, setOpacity] = useState(0);
+    const [opacity1, setOpacity1] = useState(0);
+    const [opacity2, setOpacity2] = useState(0);
     let [type, setType] = useState('patient');
     const { setCookies } = useCookies();
     const navigate = useNavigate();
@@ -88,12 +86,14 @@ function Register() {
         let password = form.elements.password.value;
         let cpassword = form.elements.cpassword.value;
         if (password === cpassword){
-            setOpacity(0);
+            setOpacity1(0);
+            setOpacity2(0);
             let email = form.elements.email.value;
-            // TO DO - WHEN API INTEGRATED, MAKE A CHECK SO THAT THE SAME EMAIL & NUMBER ISN'T USED TWICE
+            // TO DO - WHEN API INTEGRATED, MAKE A CHECK SO THAT THE SAME EMAIL ISN'T USED TWICE
             let fname = form.elements.fname.value;
             let sname = form.elements.sname.value;
             let dob = form.elements.dob.value;
+            console.log(fname)
             let temp_details = {
                 'fname': fname,
                 'sname': sname,
@@ -102,30 +102,51 @@ function Register() {
                 'dob': dob,
                 'type': type
             };
-            //setDetails(temp_details);
-            console.log("Registration submitted", temp_details)
 
-            //API STUFF TO REGISTER USER, AND FETCH ID
-            let id = '1625'
-            fname = 'Szymon'
-            sname = 'Galutowksi'
-
-            setCookies({
-                type: type,
-                name: fname+' '+sname,
-                id: id,
-                prevPageStack: [],
-                currentPage: null
-            });
-
-            if (type === 'patient') {
-                navigate("/home");
-            } else {
-                navigate("/staffApproval")
+            function validDate(dateString) { //returns true/false
+                
+                const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/; // #iHateRegex
+                const match = dateString.match(dateRegex);
+                console.log(match) // match = ["32/01/2007","32","01","2007"] when i input match[0]
+                
+                if (!match) {
+                    return false;
+                }
+            
+                const day = parseInt(match[1], 10);  // just converts the value, currently a str, into a base 10 int
+                const month = parseInt(match[2], 10);
+                const year = parseInt(match[3], 10);
+            
+                const date = new Date(year, month - 1, day); // checks if date is valid, 0 based indexing for months
+                return (
+                    date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
+                );
             }
 
+            if (fname !== '' && sname !== '' && email !== '' && password !== '' && validDate(dob)) {
+                //setDetails(temp_details);
+                console.log("Registration submitted", temp_details)
+
+                uponRegister(fname, sname, email, type, password, dob, (text) => {
+                    setCookies({
+                        type: type,
+                        name: fname+' '+sname,
+                        prevPageStack: [],
+                        currentPage: null,
+                        authBool: true
+                    });
+                    if (type === 'patient') {
+                        navigate("/home");
+                    } else {
+                        navigate("/staffApproval")
+                    }
+                }) //API STUFF TO REGISTER USER
+                
+            } else {
+                setOpacity2(1);
+            }
         } else {
-            setOpacity(1);
+            setOpacity1(1);
         }
         
     }
@@ -158,7 +179,8 @@ function Register() {
         <button type='submit' onClick={applyPatient}>Register!</button>
         <button style={{position:'absolute', right:0, bottom:0}} type='submit_as_staff' onClick={applyStaff}>Register as Staff</button>
         </form>
-        <h3 style={{color: 'red', opacity: opacity, textAlign:'center'}}>Passwords do not match, try again.</h3>
+        <h3 style={{color: 'red', opacity: opacity1, textAlign:'center'}}>Passwords do not match, try again.</h3>
+        <h3 style={{color: 'red', opacity: opacity2, textAlign:'center'}}>Please make sure all fields are filled in correctly.</h3>
         </>
     );
 }

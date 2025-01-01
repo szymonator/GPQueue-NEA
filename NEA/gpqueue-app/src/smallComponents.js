@@ -1,16 +1,16 @@
 import React from "react";
 import {useState, useEffect, memo} from "react";
 import { useCookies, useBooking } from "./userContexts";
+// eslint-disable-next-line
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import  Stack  from "./stack";
 
 export{
-    Timer,
     Back,
     hubOrSub,
 }
 
-const Timer = memo(function Timer() {
+export const Timer = memo(function Timer() {
 
     const [time, setTime] = useState(new Date());
     const formattedTime = time.toLocaleTimeString()
@@ -65,7 +65,8 @@ function Back() {
             id: cookies.id,
             prevPageStack: prevPageStack.items, 
             currentPage: prevPage,
-            backUsed: true
+            backUsed: true,
+            authBool: cookies.authBool
         }
 
         setCookies(newCookies);
@@ -121,9 +122,9 @@ function hubOrSub(pageName, cookies) { //UPON CALLING THIS FUNCTION, PASS IN THE
     return {
         type: cookies.type,
         name: cookies.name,
-        id: cookies.id,
         prevPageStack: prevPageStack.items, //technically stack dehydration
         currentPage: pageName,
         backUsed: backBool,
+        authBool: cookies.authBool
     }
 }
