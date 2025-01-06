@@ -8,6 +8,7 @@ import { Timer, Back, hubOrSub } from './smallComponents.js';
 import { PatientTopBar, StaffTopBar } from './4 - topBar.js'
 import { useCookies, useBooking } from "./userContexts.js";
 import { testDates, testAppts } from './testData.js';
+import { fetchDates } from './ApiCalls.js';
 
 export{
     AppointmentsHome,
@@ -179,119 +180,134 @@ function BookAppointment1() {
 
 
 function BookAppointment2() {
-
     const navigate = useNavigate();
-
     const hasRun = useRef(false);
     let { cookies, setCookies } = useCookies();
     const { bookingData, setBookingData } = useBooking();
-    const tempData = bookingData
-    const [ selection, setSelection] = useState(''); 
-    const [ opacity, setOpacity ] = useState(0);
+    const tempData = bookingData;
 
-    if (!cookies.authBool) {navigate('/login')};
+    const [selection, setSelection] = useState('');
+    const [opacity, setOpacity] = useState(0);
+    const [fullDates, setFullDates] = useState(null); // Initialize as null
+    const [currentDates, setCurrentDates] = useState(null); // Initialize as null
+    const [loading, setLoading] = useState(true); // Track loading state
+
+    if (!cookies.authBool) {
+        navigate('/login');
+    }
+
     useEffect(() => {
         if (!hasRun.current) {
             setCookies(hubOrSub('BookAppointment2', cookies));
             if (tempData.dates !== '') {
-                setSelection(tempData.dates)
+                setSelection(tempData.dates);
             }
-            hasRun.current = true
-        }}, [setCookies, cookies, tempData.dates])
 
-    // BIG API STUFF TO FETCH AVAILABLE DAYS DATA FOR 2 MONTHS FORWARDS (INCLUDING THE CURRENT ONE)
-    // THEREFORE IF THIS MONTH IS DEC, THEN APPTS FROM JAN AND FEB ARE ALSO FETCHED AS WELL AS DEC
+            // Fetch data in useEffect
+            fetchDates(bookingData.priority, (callback) => {
+                setFullDates(callback['dates']);
+                setCurrentDates(callback['dates'][0]); // Set the first month's data as default
+                setLoading(false); // Mark loading as complete
+            });
 
-    // BACKEND ALGORITHM SHOULD TAKE INTO ACCOUNT THE DAYS OF THE CURRENT MONTH THAT HAVE PASSED ALREADY.
-    // BACKEND SHOULD SEND AN OBJECT IN THE FORM OF SOMETHING LIKE IN testData.js (WHERE TRUE MEANS AT LEAST ONE APPT IS AVAILABLE,
-    // AND FALSE MEANS THERE ISN'T ONE):
+            hasRun.current = true;
+        }
+    }, [setCookies, cookies, tempData.dates, bookingData.priority]);
 
-    const fullDates = testDates // IMPORTED FROM testData.js
-    const [ currentDates, setCurrentDates ] = useState(fullDates[0]);
-
-    const now = new Date()
-    const months = ['January', 'February', 'March', 'April', 'May', 'June','July', 'August', 'September', 'October', 'November', 'December'];
-    const [ month, setMonth ] = useState(months[now.getMonth()])
+    const now = new Date();
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const [month, setMonth] = useState(months[now.getMonth()]);
 
     const handleSelect = (date) => {
         if (!selection.includes(date)) {
-            setSelection(selection + date+', ')
+            setSelection(selection + date + ', ');
         } else {
-            setSelection(selection.replace(date+', ', ''))
-        }}
+            setSelection(selection.replace(date + ', ', ''));
+        }
+    };
 
-    const group = useRef(0)
+    const group = useRef(0);
 
-    const handlePrevious = (event) => {
+    const handlePrevious = () => {
         if (group.current > 0) {
-            setCurrentDates(fullDates[group.current-1])
-            setMonth(months[Object.entries(fullDates[group.current-1])[0][0].slice(3,5)-1])
-            group.current -= 1
-        }}
+            setCurrentDates(fullDates[group.current - 1]);
+            setMonth(months[Object.entries(fullDates[group.current - 1])[0][0].slice(3, 5) - 1]);
+            group.current -= 1;
+        }
+    };
 
-    const handleNext = (event) => {
+    const handleNext = () => {
         if (group.current < 2) {
-            setCurrentDates(fullDates[group.current+1])
-            setMonth(months[Object.entries(fullDates[group.current+1])[0][0].slice(3,5)-1])
-            group.current += 1
-        }}
+            setCurrentDates(fullDates[group.current + 1]);
+            setMonth(months[Object.entries(fullDates[group.current + 1])[0][0].slice(3, 5) - 1]);
+            group.current += 1;
+        }
+    };
 
-    const handleContinue = (event) => {
+    const handleContinue = () => {
         if (selection === '') {
             setOpacity(100);
         } else {
-
             setBookingData({
                 priority: tempData.priority,
                 reason: tempData.reason,
                 dates: selection,
                 times: tempData.times,
-            })
+            });
 
-            navigate('/BookAppointment3')
-        }}
+            navigate('/BookAppointment3');
+        }
+    };
 
-    return(
+    // Conditional rendering: Show loading spinner or placeholder until data is fetched
+    if (loading || !currentDates) {
+        return <div>Loading...</div>; // Show loading indicator
+    }
+
+    return (
         <>
-        <div style={{ position: "relative", width: "100%" }}>
-            <Back />
-            <h1 style={{'textAlign':'center'}}>Booking (part 2)</h1>
-            <h2 style={{'textAlign':'center'}}>Select your preferred days</h2>
-            <div className="centerPage" style={{'flexDirection':'row', 'justifyContent':'left', 'gap':'200px'}}>
-                <div className={'Calendar'}>
-                    {Object.entries(currentDates).map(([date, dateBool]) => (
-                    <div key={date} className='day' 
-                    onClick={dateBool ? () => handleSelect(date) : undefined} // Only call if available
-                    style={{'backgroundColor': dateBool ? "#90ee90" : "#d3d3d3",
-                                                'pointerEvents': dateBool ? "auto" : "none",
-                                                'cursor': dateBool ? "pointer" : "not-allowed",
-                                                'borderRadius':'5px'}}>
-                        <p style={{'marginTop':'5px'}}>{date}</p>
+            <div style={{ position: "relative", width: "100%" }}>
+                <Back />
+                <h1 style={{ 'textAlign': 'center' }}>Booking (part 2)</h1>
+                <h2 style={{ 'textAlign': 'center' }}>Select your preferred days</h2>
+                <div className="centerPage" style={{ 'flexDirection': 'row', 'justifyContent': 'left', 'gap': '200px' }}>
+                    <div className={'Calendar'}>
+                        {Object.entries(currentDates).map(([date, dateBool]) => (
+                            <div key={date} className='day'
+                                onClick={dateBool ? () => handleSelect(date) : undefined} // Only call if available
+                                style={{
+                                    'backgroundColor': dateBool ? "#90ee90" : "#d3d3d3",
+                                    'pointerEvents': dateBool ? "auto" : "none",
+                                    'cursor': dateBool ? "pointer" : "not-allowed",
+                                    'borderRadius': '5px'
+                                }}>
+                                <p style={{ 'marginTop': '5px' }}>{date}</p>
+                            </div>
+                        ))}
                     </div>
-                    ))}
-                </div>
-                    <div style={{'display':'flex', 'flexDirection':'column', 'justifyContent':'center', 'gap':'10px', 'flexWrap':'wrap', 'alignItems':'center'}}>
+                    <div style={{ 'display': 'flex', 'flexDirection': 'column', 'justifyContent': 'center', 'gap': '10px', 'flexWrap': 'wrap', 'alignItems': 'center' }}>
                         <h3>Current month: {month}</h3>
-                        <div style={{'maxWidth':'505px', 'textAlign':'center'}}>
+                        <div style={{ 'maxWidth': '505px', 'textAlign': 'center' }}>
                             <p>Days selected: {selection}</p>
                         </div>
-                        <p style={{'color':'red', 'opacity':opacity}}>Please select at least one day before continuing!</p>
+                        <p style={{ 'color': 'red', 'opacity': opacity }}>Please select at least one day before continuing!</p>
                         <div className={'buttonDiv'} onClick={handlePrevious}>
                             <p>Previous Month</p>
                         </div>
                         <div className={'buttonDiv'} onClick={handleNext}>
                             <p>Next Month</p>
                         </div>
-                        <div className={'buttonDiv'} style={{'width':'200px'}} onClick={handleContinue}>
+                        <div className={'buttonDiv'} style={{ 'width': '200px' }} onClick={handleContinue}>
                             <p>Continue</p>
                         </div>
                     </div>
+                </div>
             </div>
-        </div>
             <Timer />
         </>
     );
 }
+
 
 
 

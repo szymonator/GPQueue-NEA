@@ -1,5 +1,0 @@
-localhost
-GPQueue
-postgres
-@dm1n
-5432

@@ -67,6 +67,7 @@ function Register() {
 
     const [opacity1, setOpacity1] = useState(0);
     const [opacity2, setOpacity2] = useState(0);
+    const [opacity3, setOpacity3] = useState(0);
     let [type, setType] = useState('patient');
     const { setCookies } = useCookies();
     const navigate = useNavigate();
@@ -127,7 +128,15 @@ function Register() {
                 //setDetails(temp_details);
                 console.log("Registration submitted", temp_details)
 
-                uponRegister(fname, sname, email, type, password, dob, (text) => {
+                uponRegister(fname, sname, email, type, password, dob, (error) => {
+
+                    if (!error) {
+                        setOpacity3(1)
+                        return 
+                    }
+                    
+                    setOpacity3(0)
+
                     setCookies({
                         type: type,
                         name: fname+' '+sname,
@@ -181,10 +190,10 @@ function Register() {
         </form>
         <h3 style={{color: 'red', opacity: opacity1, textAlign:'center'}}>Passwords do not match, try again.</h3>
         <h3 style={{color: 'red', opacity: opacity2, textAlign:'center'}}>Please make sure all fields are filled in correctly.</h3>
+        <h3 style={{color: 'red', opacity: opacity3, textAlign:'center'}}>Email already in use.</h3>
         </>
     );
 }
-
 
 function StaffApproval() {
     return(

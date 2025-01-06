@@ -1,6 +1,7 @@
 export{
     uponLogin,
     uponRegister,
+    fetchDates
 };
 
 const domain = 'http://127.0.0.1:5000/'
@@ -69,12 +70,46 @@ function uponRegister(fname, sname, email, type, password, dob, callback) {
         })  
 
         .then((token) => {
-            console.log('token:', token); 
+            console.log('token:', token);
+            console.log(JSON.parse(token).error)
+            if (JSON.parse(token).error === "Email in use"){
+                console.log('throwing')
+                throw new Error("Email in use")
+            }
             sessionStorage.setItem('jwt', token);
-            callback(0)
+            callback(1)
         })
 
         .catch(error => {
-            console.error('Error:', error.message);
+            console.log('Entering catch block');
+            console.error('Error:', error.message || error);
+            callback(0)
+        });
+}
+
+
+
+function fetchDates(priority, callback) {
+    const token = sessionStorage.getItem('jwt')
+    fetch(domain+`/fetchDates?priority=${priority}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`},
+        credentials: 'include',
+    })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("Couldn't fetch dates :( ")}
+                return response.text()
+        })  
+
+        .then((data) => {
+            callback(JSON.parse(data))
+        })
+
+        .catch(error => {
+            console.log('Entering catch block');
+            console.error('Error:', error.message || error);
         });
 }

@@ -60,7 +60,7 @@ function PatientTopBar() {
     return(
         <>
         <div className={'topBar'}>
-            <img src='https://banner2.cleanpng.com/20180131/roe/av2ouosx2.webp' className={'icon'} onClick={sendHome} alt={'Logo'}/>
+            <img src='https://i.imgur.com/v2qKKWO.png' className={'icon'} onClick={sendHome} alt={'Logo'}/>
             <div className={'Column'} style={{textAlign: 'center', marginTop: '18px'}}>
                 <h3>Welcome, {patientName}!</h3>
             </div>
