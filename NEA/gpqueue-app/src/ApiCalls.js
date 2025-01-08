@@ -1,7 +1,8 @@
 export{
     uponLogin,
     uponRegister,
-    fetchDates
+    fetchDates,
+    fetchAppointments
 };
 
 const domain = 'http://127.0.0.1:5000/'
@@ -91,7 +92,7 @@ function uponRegister(fname, sname, email, type, password, dob, callback) {
 
 function fetchDates(priority, callback) {
     const token = sessionStorage.getItem('jwt')
-    fetch(domain+`/fetchDates?priority=${priority}`, {
+    fetch(domain+`fetchDates?priority=${priority}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -101,6 +102,34 @@ function fetchDates(priority, callback) {
         .then((response) => {
             if (!response.ok) {
                 throw new Error("Couldn't fetch dates :( ")}
+                return response.text()
+        })  
+
+        .then((data) => {
+            callback(JSON.parse(data))
+        })
+
+        .catch(error => {
+            console.log('Entering catch block');
+            console.error('Error:', error.message || error);
+        });
+}
+
+
+
+function fetchAppointments(priority, dates, times, callback) {
+    const token = sessionStorage.getItem('jwt')
+    
+    fetch(domain+`fetchAppointments`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`},
+        credentials: 'include',
+    })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("Couldn't fetch appts :( ")}
                 return response.text()
         })  
 

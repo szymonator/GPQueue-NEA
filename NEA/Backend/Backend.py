@@ -1,21 +1,24 @@
-from threading import Thread, Lock
 from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
 import psycopg2
 import datetime
 import calendar
+import os
+from dotenv import load_dotenv
+
+from MyHash import custom_hash
+from fetch_dates import processing_dates
+
+load_dotenv()
 
 app = Flask(__name__)
-app.config['JWT_SECRET_KEY'] = 'W00dh0uśęC0llęgę2024!'
+app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
 app.config['JWT_TOKEN_LOCATION'] = ['headers']
 jwt = JWTManager(app)
 CORS(app, supports_credentials=True, origins=['http://localhost:3000'], expose_headers=["Content-Type", "Authorization"])
 
-conn_config = ['localhost', 'GPQueue', 'postgres', '@dm1n', '5432']
-
-def Hash(value):
-    return value
+conn_config = [os.getenv("HOST"), os.getenv("DBNAME"), os.getenv("USER"), os.getenv("PASSWORD"), os.getenv("PORT")]
 
 
 @app.route('/get_token', methods=['POST'])
@@ -26,17 +29,24 @@ def get_token():
 
     #find email and corresponding pwd hash in db, hash pwd before checking, then return id
 
-    password_hash = password # IMPLEMENT HASHING ALGORITHM
-
     try:
         conn = psycopg2.connect(host=conn_config[0], dbname=conn_config[1], user=conn_config[2], password=conn_config[3], port=conn_config[4])
         cur = conn.cursor()
     except Exception as error:
         return jsonify({'error':error})
     
+    cur.execute('''SELECT salt
+                FROM "Users"
+                WHERE email = %s''', 
+                (email, ))
+    
+    salt = cur.fetchone()[0]
+    password_hash, salt = custom_hash(password=password, salt=salt)
+
     cur.execute('''SELECT user_id
             FROM "Users"
-            WHERE email=%s AND password_hash=%s''', (email, str(password_hash)))
+            WHERE email=%s AND password_hash=%s''', 
+            (email, str(password_hash)))
     fetched = cur.fetchone()
     cur.close()
     conn.close()
@@ -76,7 +86,7 @@ def get_name():
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    password_hash = Hash(data.get('password'))
+    password_hash, salt = custom_hash(password=data.get('password'))
     
     try:
         conn = psycopg2.connect(host=conn_config[0], dbname=conn_config[1], user=conn_config[2], password=conn_config[3], port=conn_config[4])
@@ -89,12 +99,12 @@ def register():
     if email_check != None:
         return jsonify({"error": "Email in use"})
 
-    cur.execute('''INSERT INTO "Users" (f_name, l_name, email, user_type, password_hash) 
-                VALUES (%s, %s, %s, %s, %s)''', (data.get('fname'), data.get('sname'), data.get('email'), data.get('type'),str(password_hash),))
+    cur.execute('''INSERT INTO "Users" (f_name, l_name, email, user_type, password_hash, salt) 
+                VALUES (%s, %s, %s, %s, %s, %s)''', (data.get('fname'), data.get('sname'), data.get('email'), data.get('type'), password_hash, salt))
     print('inserted users', data.get('fname'))
     conn.commit()
     cur.execute('''SELECT user_id FROM "Users"
-                WHERE email=%s AND password_hash=%s''', (data.get('email'), str(password_hash)))
+                WHERE email=%s AND password_hash=%s''', (data.get('email'), password_hash))
     id = cur.fetchone()[0]
     print('got id')
 
@@ -107,7 +117,6 @@ def register():
         cur.execute('''INSERT INTO Staff_Details (staff_id, verified)
                     VALUES (%s, 'Y')''', (id, ))
     conn.commit()
-    print('finished insertion')
 
     cur.close()
     conn.close()
@@ -118,74 +127,17 @@ def register():
     return response
 
 
-@app.route('/fetchDates', methods=['GET'])
+@app.route('/fetchDates', methods=['GET']) 
 @jwt_required()
 def fetch_dates():
     priority = request.args.get('priority')
-    print(priority)
-    try:
-        conn = psycopg2.connect(host=conn_config[0], dbname=conn_config[1], user=conn_config[2], password=conn_config[3], port=conn_config[4])
-        cur = conn.cursor()
-    except Exception as error:
-        return jsonify({'error':error})
-    
-    # 24 available appointments a day PER verified doctor (staff)
-    cur.execute('''SELECT staff_id FROM Staff_Details WHERE verified='Y' ''')
-    amount = len(cur.fetchall())
-    daily_amount = 24*amount
-        
-    now = datetime.datetime.now()
-    current_month = int(now.strftime('%m'))
-    current_year = int(now.strftime('%Y'))
-
-    days_list = []
-    for i in range(current_month, current_month+3):
-            if i > 12:
-                j = i - 12
-                y = current_year+1
-            else:
-                j = i
-                y = current_year
-            days_list.append(
-                [str(d).zfill(2)+'/'+str(j).zfill(2)+'/'+str(y) for d in range(1,calendar.monthrange(y, j)[-1]+1)]
-            )
-
-    dates = {'dates':[dict.fromkeys(days_list[i], '') for i in range(3)]}
-
-    for i in range(3):
-        cur.execute('''SELECT TO_CHAR(appt_date, 'DD/MM/YYYY') FROM Appointments WHERE status = 'scheduled' AND appt_date BETWEEN %s AND %s''', (days_list[i][0], days_list[i][-1]))
-        appts = cur.fetchall()
-
-        for key in dates['dates'][i]:
-            count = appts.count((key, ))
-            if count < daily_amount:
-                dates['dates'][i][key] = True  
-            else:
-                dates['dates'][i][key] = False
-
-    for i in range(3): # -------> -------> -------> -------> -------> -------> -------> -------> -------> -------> -------> if appt in table priority is greater than user priority, it should mark as true
-        cur.execute('''SELECT TO_CHAR(appt_date, 'DD/MM/YYYY') FROM Appointments WHERE status = 'scheduled' AND (appt_date BETWEEN %s AND %s) AND priority>%s''', (days_list[i][0], days_list[i][-1], priority))
-        appts = cur.fetchall()
-
-        if len(appts) == 0:
-            break
-
-        for key in dates['dates'][i]:
-            if (key, ) in appts and not dates['dates'][i][key]:
-                dates['dates'][i][key] = True
+    return jsonify(processing_dates(priority)) #outsourced to another file to reduce clutter
 
 
-
-    for key in dates['dates'][0]:
-        if key == now.strftime('%d/%m/%Y'):
-              dates['dates'][0][key] = False
-              break
-        else:
-            dates['dates'][0][key] = False
-    
-
-    return jsonify(dates)
-
+@app.route('/fetchAppointments', methods=['PUT'])
+@jwt_required()
+def fetchAppointments():
+    data = request.get_json()
 
 # starts the backend
 if __name__ == '__main__':

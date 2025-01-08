@@ -1,18 +1,19 @@
+ALTER DATABASE "GPQueue" SET DateStyle = 'DMY';
+
 CREATE TABLE IF NOT EXISTS "Users" (
     user_id SERIAL PRIMARY KEY,
     f_name VARCHAR(100) NOT NULL,
     l_name VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     user_type VARCHAR(255) NOT NULL CHECK ( user_type IN ('patient', 'staff')),
-    password_hash INTEGER NOT NULL,
+    password_hash TEXT NOT NULL,
+    salt BYTEA NOT NULL,
     register_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS Patient_Details (
     patient_id INTEGER PRIMARY KEY,
     dob DATE NOT NULL,
-    medical_history TEXT,
-    prescriptions TEXT,
     FOREIGN KEY (patient_id) REFERENCES "Users"(user_id)
 );
 
@@ -30,21 +31,8 @@ CREATE TABLE IF NOT EXISTS Appointments (
     appt_date DATE NOT NULL,
     appt_time VARCHAR(63) NOT NULL,
     creation_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(20) NOT NULL CHECK (status IN ('possible','scheduled', 'completed')),
-    appt_details TEXT,
-    FOREIGN KEY (patient_id) REFERENCES Patient_Details(patient_id),
-    FOREIGN KEY (staff_id) REFERENCES Staff_Details(staff_id)
-);
-
-CREATE TABLE IF NOT EXISTS Messages (
-    message_id SERIAL PRIMARY KEY,
-    patient_id INTEGER NOT NULL,
-    staff_id INTEGER NOT NULL,
-    msg_direction VARCHAR(20) NOT NULL CHECK (msg_direction IN ('s->p', 'p->s')),
-    subject TEXT,
-    msg_text TEXT,
-    msg_sent TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(20) NOT NULL CHECK (status IN ('unseen', 'seen')),
+    status VARCHAR(20) NOT NULL CHECK (status IN ('possible','scheduled', 'completed', 'reserved')),
+    -- RESERVED IS FOR APPOINTMENTS THAT MAY BE CHOSEN BY THE USER WHILE BOOKING
     FOREIGN KEY (patient_id) REFERENCES Patient_Details(patient_id),
     FOREIGN KEY (staff_id) REFERENCES Staff_Details(staff_id)
 );
@@ -57,9 +45,7 @@ SELECT
     u.email,
     u.password_hash,
     u.register_date,
-    pd.dob,
-    pd.medical_history,
-    pd.prescriptions
+    pd.dob
 FROM "Users" u
 JOIN Patient_Details pd ON u.user_id = pd.patient_id;
 

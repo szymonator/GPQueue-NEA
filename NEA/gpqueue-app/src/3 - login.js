@@ -124,7 +124,7 @@ function Register() {
                 );
             }
 
-            if (fname !== '' && sname !== '' && email !== '' && password !== '' && validDate(dob)) {
+            if (fname !== '' && sname !== '' && email !== '' && password !== '' && validDate(dob) && cpassword !== '') {
                 //setDetails(temp_details);
                 console.log("Registration submitted", temp_details)
 
