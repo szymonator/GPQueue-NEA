@@ -73,4 +73,7 @@ def processing_dates(priority):
         else:
             dates['dates'][0][key] = False
 
+    cur.close()
+    conn.close()
+
     return dates

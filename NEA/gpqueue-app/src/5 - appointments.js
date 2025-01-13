@@ -464,9 +464,9 @@ function BookAppointment4() {
                 <h2 style={{'textAlign':'center'}}>Confirm this appointment choice or reroll</h2>
                 <div className="centerPage" style={{'flexDirection':'center', 'justifyContent':'center', 'alignItems':'center', 'gap':'0px'}}>
 
-                    <h3>Date: {currentAppt[1]}</h3>
-                    <h3>Time: {currentAppt[2]}</h3>
-                    <h3>Doctor: Dr {currentAppt[3]}</h3>
+                    <h3>Date: {currentAppt['dates']}</h3>
+                    <h3>Time: {currentAppt['timeslot']}</h3>
+                    <h3>Doctor: Dr {currentAppt['staff_name']}</h3>
                     <p style={{'color':'red'}}>You have {String(Math.floor(countdown/60)) +':'+String(countdown%60).padStart(2, '0')} left to lock your choice in, or to reroll for another appointment time.</p>
                     <p>Rerolls left: {rerolls}</p>
                     <div style={{'display':'flex', 'flexDirection':'row' ,'gap':'5px', 'justifyContent':'center', 'alignItems':'center'}}>

@@ -18,17 +18,18 @@ function uponLogin(email, password, callback) {
             if (!response.ok) {
                 throw new Error('Login failed!');
             }
-            return response.text(); 
+            return response.json(); 
         })
-        .then((token) => {
-            console.log('token recieved:', token); 
-            sessionStorage.setItem('jwt', token); 
+        .then((data) => {
+            console.log('message:', data['message'])
+            console.log('token recieved:', data['token']); 
+            sessionStorage.setItem('jwt', data['token']); 
 
-            fetch(domain+'get_name', {
+            fetch(domain+'/get_name', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` // Include the token in the Authorization header
+                    'Authorization': `Bearer ${data['token']}` // Include the token in the Authorization header
                 },
                 credentials: 'include' })
         
@@ -67,19 +68,19 @@ function uponRegister(fname, sname, email, type, password, dob, callback) {
         .then((response) => {
             if (!response.ok) {
                 throw new Error("Couldn't register/get jwt :( ")}
-            return response.text()
+            return response.json()
         })  
 
-        .then((token) => {
-            console.log('token:', token);
-            console.log(JSON.parse(token).error)
-            if (JSON.parse(token).error === "Email in use"){
+        .then((data) => {
+            if (data['error'] === "Email in use"){
                 console.log('throwing')
                 throw new Error("Email in use")
             }
+            const token = data['token']
+            console.log('token:', token);
             sessionStorage.setItem('jwt', token);
             callback(1)
-        })
+})
 
         .catch(error => {
             console.log('Entering catch block');
@@ -125,7 +126,9 @@ function fetchAppointments(priority, dates, times, callback) {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`},
-        credentials: 'include',
+        body: JSON.stringify({'priority':priority, 'dates':dates, 'times':times}),
+        credentials: 'include'
+
     })
         .then((response) => {
             if (!response.ok) {

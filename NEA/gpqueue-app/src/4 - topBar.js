@@ -9,7 +9,7 @@ import { useCookies } from "./userContexts.js";
 export{
     PatientTopBar,
     StaffTopBar
-};
+}
 
 function PatientTopBar() {
 

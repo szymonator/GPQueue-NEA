@@ -31,8 +31,11 @@ CREATE TABLE IF NOT EXISTS Appointments (
     appt_date DATE NOT NULL,
     appt_time VARCHAR(63) NOT NULL,
     creation_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(20) NOT NULL CHECK (status IN ('possible','scheduled', 'completed', 'reserved')),
-    -- RESERVED IS FOR APPOINTMENTS THAT MAY BE CHOSEN BY THE USER WHILE BOOKING
+    status VARCHAR(255) NOT NULL,
+    -- RESERVED IS FOR APPOINTMENTS THAT MAY BE CHOSEN BY THE USER WHILE BOOKING,
+    -- SCHEDULED + RESERVED IS FOR APPOINTMENTS THAT MAY BE CHOSEN BY THE USER WHILE BOOKING, 
+    -- WHILE THE APPT IS ALREADY SCHEDULED WITH ANOTHER USER
+    -- status IN ('scheduled', 'completed', 'reserved', 'scheduled + reserved by <OTHER ID>'))
     FOREIGN KEY (patient_id) REFERENCES Patient_Details(patient_id),
     FOREIGN KEY (staff_id) REFERENCES Staff_Details(staff_id)
 );
@@ -45,6 +48,7 @@ SELECT
     u.email,
     u.password_hash,
     u.register_date,
+    u.salt,
     pd.dob
 FROM "Users" u
 JOIN Patient_Details pd ON u.user_id = pd.patient_id;
@@ -57,6 +61,7 @@ SELECT
     u.email,
     u.password_hash,
     u.register_date,
+    u.salt,
     sd.verified
 FROM "Users" u
 JOIN Staff_Details sd ON u.user_id = sd.staff_id;

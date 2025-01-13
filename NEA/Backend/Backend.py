@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 
 from MyHash import custom_hash
 from fetch_dates import processing_dates
+from booking_algorithm import fetch_appointments
 
 load_dotenv()
 
@@ -56,8 +57,7 @@ def get_token():
     
     id = fetched[0]
     token = create_access_token(identity=id)
-    response = jsonify({'message': 'Login successful'})
-    response.set_data(value=token)
+    response = jsonify({'message': 'Login successful', 'token':token, 'error':None})
     return response
     
 
@@ -100,19 +100,19 @@ def register():
         return jsonify({"error": "Email in use"})
 
     cur.execute('''INSERT INTO "Users" (f_name, l_name, email, user_type, password_hash, salt) 
-                VALUES (%s, %s, %s, %s, %s, %s)''', (data.get('fname'), data.get('sname'), data.get('email'), data.get('type'), password_hash, salt))
+                VALUES (%s, %s, %s, %s, %s, %s)''', (data.get('fname'), data.get('sname'), data.get('email'), data.get('type'), str(password_hash), salt))
     print('inserted users', data.get('fname'))
     conn.commit()
     cur.execute('''SELECT user_id FROM "Users"
-                WHERE email=%s AND password_hash=%s''', (data.get('email'), password_hash))
+                WHERE email=%s AND password_hash=%s''', (data.get('email'), str(password_hash)))
     id = cur.fetchone()[0]
     print('got id')
 
     if data.get('type') == 'patient':
         prev_date = data.get('dob')
         new_date = prev_date[6:10] +'-'+ prev_date[3:5] +'-'+ prev_date[0:2]
-        cur.execute('''INSERT INTO Patient_Details (patient_id, dob, medical_history, prescriptions)
-                    VALUES (%s, %s, '', '')''', (id, new_date))
+        cur.execute('''INSERT INTO Patient_Details (patient_id, dob)
+                    VALUES (%s, %s)''', (id, new_date))
     else:
         cur.execute('''INSERT INTO Staff_Details (staff_id, verified)
                     VALUES (%s, 'Y')''', (id, ))
@@ -122,8 +122,7 @@ def register():
     conn.close()
 
     token = create_access_token(identity=id)
-    response = jsonify({'message': 'registration successful'})
-    response.set_data(value=token)
+    response = jsonify({'message': 'registration successful', 'token':token, 'error':None})
     return response
 
 
@@ -138,6 +137,16 @@ def fetch_dates():
 @jwt_required()
 def fetchAppointments():
     data = request.get_json()
+    priority = data.get('priority')
+    dates = data.get('dates')
+    times = data.get('times')
+    id = get_jwt_identity()
+
+    print(times)
+    print(dates)
+    print(priority)
+
+    return jsonify(fetch_appointments(priority, dates, times, id)) #outsourced to another file to reduce clutter
 
 # starts the backend
 if __name__ == '__main__':
