@@ -25,20 +25,30 @@ function Login() {
         const form = event.target;
         const email = form.elements.email.value;
         const password = form.elements.password.value;
+
+        if (!email || !password){
+            setOpacity(1)
+        } else {
+            setOpacity(0)
+        }
     
         console.log('Form submitted', { Email: email, Password: password });
 
-        let type = 'patient'
-        uponLogin(email, password, (name) => {
-            console.log('User name received:', name); 
+        uponLogin(email, password, (callback) => {
+            console.log('User name received:', callback['name']); 
             setCookies({
-                type: type,
-                name: name,
+                type: callback['type'],
+                name: callback['name'],
                 prevPageStack: [],
                 currentPage: null,
                 authBool: true
             });
-            navigate('/home')
+
+            if (callback['type'] === 'patient') {
+                navigate('/home')
+            } else if (callback['type'] === 'staff') {
+                navigate('/StaffHome')
+            }
         });
     }
 
@@ -68,29 +78,23 @@ function Register() {
     const [opacity1, setOpacity1] = useState(0);
     const [opacity2, setOpacity2] = useState(0);
     const [opacity3, setOpacity3] = useState(0);
-    let [type, setType] = useState('patient');
     const { setCookies } = useCookies();
     const navigate = useNavigate();
-
-    function applyPatient() {
-        setType('patient');
-    }
-
-    function applyStaff() {
-        setType('staff');
-    }
 
     function handleSubmit(event) {
 
         event.preventDefault()
         const form = event.target;
+        const clickedButton = event.nativeEvent.submitter; // Identify the clicked button
+        const type = clickedButton.getAttribute('data-type');
+
+        // Set the user type based on the button clicked
         let password = form.elements.password.value;
         let cpassword = form.elements.cpassword.value;
         if (password === cpassword){
             setOpacity1(0);
             setOpacity2(0);
             let email = form.elements.email.value;
-            // TO DO - WHEN API INTEGRATED, MAKE A CHECK SO THAT THE SAME EMAIL ISN'T USED TWICE
             let fname = form.elements.fname.value;
             let sname = form.elements.sname.value;
             let dob = form.elements.dob.value;
@@ -144,6 +148,8 @@ function Register() {
                         currentPage: null,
                         authBool: true
                     });
+
+                    console.log(type)
                     if (type === 'patient') {
                         navigate("/home");
                     } else {
@@ -185,8 +191,8 @@ function Register() {
             <p>Date of Birth (DD/MM/YYYY):</p><input name='dob'></input>
         </div>
         </div>
-        <button type='submit' onClick={applyPatient}>Register!</button>
-        <button style={{position:'absolute', right:0, bottom:0}} type='submit_as_staff' onClick={applyStaff}>Register as Staff</button>
+        <button type='submit' data-type='patient' >Register!</button>
+        <button style={{'position':'absolute', 'right':0, 'bottom':0, 'zIndex': 10}} type='submit' data-type='staff' >Register as Staff</button>
         </form>
         <h3 style={{color: 'red', opacity: opacity1, textAlign:'center'}}>Passwords do not match, try again.</h3>
         <h3 style={{color: 'red', opacity: opacity2, textAlign:'center'}}>Please make sure all fields are filled in correctly.</h3>
@@ -198,7 +204,7 @@ function Register() {
 function StaffApproval() {
     return(
         <div className={'centerPage'}>
-            <img src="https://banner2.cleanpng.com/20180131/roe/av2ouosx2.webp" alt='Logo' style={{width:'400px', height:'400px', marginTop:'50px'}} />
+            <img src='https://i.imgur.com/v2qKKWO.png' alt='Logo' style={{width:'400px', height:'400px', marginTop:'50px'}} />
             <h1>Please wait for your supervisor to approve your registration.</h1>
             <h1>When it is approved, you will be able to log in by going back to the login page.</h1>
         </div>

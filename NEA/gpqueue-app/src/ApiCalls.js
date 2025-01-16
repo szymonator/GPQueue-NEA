@@ -2,7 +2,9 @@ export{
     uponLogin,
     uponRegister,
     fetchDates,
-    fetchAppointments
+    fetchAppointments,
+    chooseAppointment,
+    endBookingSession
 };
 
 const domain = 'http://127.0.0.1:5000/'
@@ -41,7 +43,7 @@ function uponLogin(email, password, callback) {
         
                 .then(data => { 
                     console.log(data['name'])  // I WANT TO RETURN THIS VALUE HERE
-                    callback(data['name'])
+                    callback(data)
                 }) 
                 .catch(error => {
                     console.error('Error:', error.message);
@@ -103,16 +105,22 @@ function fetchDates(priority, callback) {
         .then((response) => {
             if (!response.ok) {
                 throw new Error("Couldn't fetch dates :( ")}
-                return response.text()
+                return response.json()
         })  
 
         .then((data) => {
-            callback(JSON.parse(data))
+            if (data['error']){
+                throw new Error(data['error'])
+            }
+            console.log(data['message'])
+            const temp = data['dates']
+            callback(temp)
         })
 
         .catch(error => {
             console.log('Entering catch block');
             console.error('Error:', error.message || error);
+            callback('error')
         });
 }
 
@@ -121,7 +129,7 @@ function fetchDates(priority, callback) {
 function fetchAppointments(priority, dates, times, callback) {
     const token = sessionStorage.getItem('jwt')
     
-    fetch(domain+`fetchAppointments`, {
+    fetch(domain+'fetchAppointments', {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -133,11 +141,84 @@ function fetchAppointments(priority, dates, times, callback) {
         .then((response) => {
             if (!response.ok) {
                 throw new Error("Couldn't fetch appts :( ")}
-                return response.text()
+                return response.json()
         })  
 
         .then((data) => {
-            callback(JSON.parse(data))
+            if (data['error']){
+                throw new Error(data['error'])
+            }
+            console.log(data['appts'])
+            const temp = data['appts']
+
+            callback(temp)
+        })
+
+        .catch(error => {
+            console.log('Entering catch block');
+            console.error('Error:', error.message || error);
+        });
+}
+
+
+function chooseAppointment(appt){
+    const token = sessionStorage.getItem('jwt')
+
+    fetch(domain + 'chooseAppointment', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`},
+        body: JSON.stringify({'appt': appt}),
+        credentials: 'include'
+    })
+
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("booking failed :( ")}
+                return response.json()
+        })
+
+        .then((data) => {
+            if (data['error']){
+                throw new Error(data['error'])
+            }
+            console.log(data['msg'])
+            const temp = data['msg']
+            return temp
+        })
+
+        .catch(error => {
+            console.log('Entering catch block');
+            console.error('Error:', error.message || error);
+        });
+}
+
+
+function endBookingSession(callback){
+    const token = sessionStorage.getItem('jwt')
+
+    fetch(domain + 'endBookingSession', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`},
+        credentials: 'include'
+    })
+
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("exit failed :( ")}
+                return response.json()
+        })
+
+        .then((data) => {
+            if (data['error']){
+                throw new Error(data['error'])
+            }
+            console.log(data['msg'])
+            const temp = data['msg']
+            return temp
         })
 
         .catch(error => {

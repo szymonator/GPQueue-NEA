@@ -31,7 +31,7 @@ export const Timer = memo(function Timer() {
 
     return(
         <>
-            <p className={'Timer'}>{formattedDate} {formattedTime}</p>
+            <h3 className={'Timer'}>{formattedDate} {formattedTime}</h3>
         </>
     );
 });
@@ -94,7 +94,7 @@ function hubOrSub(pageName, cookies) { //UPON CALLING THIS FUNCTION, PASS IN THE
 
     const hubOrSubDict = {
         'home':'hub',
-        'appointments':'hub',
+        'staffhome':'hub',
         'futureAppointments':'sub',
         'pastAppointments':'sub',
         'BookAppointment1':'sub',

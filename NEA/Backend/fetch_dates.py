@@ -17,6 +17,9 @@ def processing_dates(priority):
     cur.execute('''SELECT staff_id FROM Staff_Details WHERE verified='Y' ''')
     amount = len(cur.fetchall())
     daily_amount = 24*amount
+    if daily_amount == 0:
+        return 'no staff'
+
         
     now = datetime.datetime.now()
     current_month = int(now.strftime('%m'))

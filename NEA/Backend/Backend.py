@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 from MyHash import custom_hash
 from fetch_dates import processing_dates
-from booking_algorithm import fetch_appointments
+from booking_algorithm import fetch_appointments, choose_appointment, end_booking_session
 
 load_dotenv()
 
@@ -75,12 +75,13 @@ def get_name():
 
     cur.execute('''SELECT f_name, l_name, user_type FROM "Users" WHERE user_id=%s''', (id,))
     names = cur.fetchone()
-    name = names[0]+ ' ' +names[1]  
+    name = names[0]+ ' ' +names[1]
+    type = names[2]
 
     cur.close()
     conn.close()
 
-    return jsonify({'name':name})
+    return jsonify({'name':name, 'type':type})
 
 
 @app.route('/register', methods=['POST'])
@@ -130,7 +131,11 @@ def register():
 @jwt_required()
 def fetch_dates():
     priority = request.args.get('priority')
-    return jsonify(processing_dates(priority)) #outsourced to another file to reduce clutter
+    dates = processing_dates(priority) #outsourced to another file to reduce clutter
+    if dates == 'no staff':
+        return jsonify({'message':'unsuccessful', 'error':'no staff', 'dates':None})
+    else:
+        return jsonify({'message':'fetched successfully', 'dates':dates, 'error':None}) 
 
 
 @app.route('/fetchAppointments', methods=['PUT'])
@@ -146,7 +151,33 @@ def fetchAppointments():
     print(dates)
     print(priority)
 
-    return jsonify(fetch_appointments(priority, dates, times, id)) #outsourced to another file to reduce clutter
+    appointments = fetch_appointments(priority, dates, times, id) #outsourced to another file to reduce clutter
+
+    print('hi')
+
+    return jsonify({'message':'fetched successfully', 'appts':appointments, 'error':None}) 
+
+
+@app.route('/chooseAppointment', methods=['DELETE'])
+@jwt_required()
+def chooseAppointment():
+    data = request.get_json()
+    appt = data.get('appt')
+    id = get_jwt_identity()
+
+    confirmation = choose_appointment(appt, id)
+
+    return jsonify({'msg':confirmation, 'error':None})
+
+
+@app.route('/endBookingSession', methods=['DELETE'])
+@jwt_required()
+def endBookingSession():
+    id = get_jwt_identity()
+
+    confirmation = end_booking_session(id)
+
+    return jsonify({'msg':confirmation, 'error':None})
 
 # starts the backend
 if __name__ == '__main__':

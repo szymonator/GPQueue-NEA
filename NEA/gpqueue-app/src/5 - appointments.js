@@ -5,81 +5,16 @@ import {useEffect, useState, useRef} from "react";
 // eslint-disable-next-line
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import { Timer, Back, hubOrSub } from './smallComponents.js';
-import { PatientTopBar, StaffTopBar } from './4 - topBar.js'
 import { useCookies, useBooking } from "./userContexts.js";
-import { testDates, testAppts } from './testData.js';
-import { fetchDates } from './ApiCalls.js';
+import { fetchAppointments, fetchDates, chooseAppointment, endBookingSession } from './ApiCalls.js';
 
 export{
-    AppointmentsHome,
     BookAppointment1,
     BookAppointment2,
     BookAppointment3,
     BookAppointment4,
     Timeout
 }
-
-function AppointmentsHome() {
-
-    const navigate = useNavigate();
-    const hasRun = useRef(false);
-
-    let { cookies, setCookies } = useCookies();
-    if (!cookies.authBool) {navigate('/login')};
-    useEffect(() => {
-        if (!hasRun.current) {
-            setCookies(hubOrSub('appointments', cookies));
-            hasRun.current = true
-        }})
-
-    //API STUFF TO GET APPOINTMENT AMOUNT WOW!
-    let appointmentAmount = 'X'
-
-    let TopBar;
-    if (cookies.type === 'patient') {
-        TopBar = <PatientTopBar />
-    } else {
-        TopBar = <StaffTopBar />
-    }
-
-    const sendToBook = (event) => {
-        console.log('sendToBook')
-        navigate('/BookAppointment1');
-    }
-
-    const sendToFuture = (event) => {
-        console.log('sendToFuture')
-    }
-
-    const sendToPast = (event) => {
-        console.log('sendToPast')
-    }
-
-    return(
-        <>
-            <>{TopBar}</>
-            <div style={{ position: "relative", width: "100%" }}>
-                <div className="centerPage">
-                    <h1>Appointments</h1>
-                    <div className="buttonDiv" onClick={sendToBook}>
-                        <h2>Book an Appointment</h2>
-                    </div>
-                    <h3>You have {appointmentAmount} appointment(s) coming up in the future.</h3>
-                    <div className="buttonDiv" onClick={sendToFuture}>
-                        <h2>View Future Appointments</h2>
-                    </div>
-                    <div className="buttonDiv" onClick={sendToPast}>
-                        <h2>View Past Appointments</h2>
-                    </div>
-                </div>
-            </div>
-            <Timer />
-        </>
-
-    );
-}
-
-
 
 function BookAppointment1() {
 
@@ -188,9 +123,9 @@ function BookAppointment2() {
 
     const [selection, setSelection] = useState('');
     const [opacity, setOpacity] = useState(0);
-    const [fullDates, setFullDates] = useState(null); // Initialize as null
-    const [currentDates, setCurrentDates] = useState(null); // Initialize as null
-    const [loading, setLoading] = useState(true); // Track loading state
+    const [fullDates, setFullDates] = useState(null); 
+    const [currentDates, setCurrentDates] = useState(null); 
+    const [loading, setLoading] = useState(true);
 
     if (!cookies.authBool) {
         navigate('/login');
@@ -205,14 +140,18 @@ function BookAppointment2() {
 
             // Fetch data in useEffect
             fetchDates(bookingData.priority, (callback) => {
-                setFullDates(callback['dates']);
-                setCurrentDates(callback['dates'][0]); // Set the first month's data as default
-                setLoading(false); // Mark loading as complete
+                if (callback === 'error'){
+                    navigate('/home')
+                } else {
+                    setFullDates(callback['dates']);
+                    setCurrentDates(callback['dates'][0]); // Set the first month's data as default
+                    setLoading(false); // Mark loading as complete
+                }
             });
 
             hasRun.current = true;
         }
-    }, [setCookies, cookies, tempData.dates, bookingData.priority]);
+    }, [setCookies, cookies, tempData.dates, bookingData.priority, navigate]);
 
     const now = new Date();
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -259,9 +198,9 @@ function BookAppointment2() {
         }
     };
 
-    // Conditional rendering: Show loading spinner or placeholder until data is fetched
+    // show loading until data is fetched
     if (loading || !currentDates) {
-        return <div>Loading...</div>; // Show loading indicator
+        return <div>Loading...</div> 
     }
 
     return (
@@ -360,7 +299,7 @@ function BookAppointment3() {
                 <h2 style={{'textAlign':'center'}}>Select your preferred timeframes</h2>
                 <div className="centerPage" style={{'flexDirection':'row', 'justifyContent':'left', 'alignItems':'center'}}>
                     <div className={'Column'} style={{'display':'flex', 'alignItems':'center', 'flexDirection':'column', 'gap':'20px'}}>
-                        <div className={'buttonDiv'} style={{'backgroundColor':'white'}} onClick={() => {handleSelect('9:00-13:00')}}>
+                        <div className={'buttonDiv'} style={{'backgroundColor':'white'}} onClick={() => {handleSelect('09:00-13:00')}}>
                             <h3>9:00 - 13:00</h3>
                         </div>
                         <div className={'buttonDiv'} style={{'backgroundColor':'white'}} onClick={() => {handleSelect('13:00-17:00')}}>
@@ -395,21 +334,47 @@ function BookAppointment4() {
     const { bookingData, setBookingData } = useBooking();
     const tempData = bookingData
 
-    if (!cookies.authBool) {navigate('/login')};
+    if (!cookies.authBool) {
+        navigate('/login');
+    }
+
+    const [ apptsList, setApptsList ] = useState([])
+    const [ currentAppt, setCurrentAppt ] = useState()
+    const [ countdown, setCountdown ] = useState(300);
+    const [ index, setIndex ] = useState(0);
+    const [ loading, setLoading ] = useState(true);
+    const [ noAppts, setNoAppts ] = useState(false);
+    const [ opacity, setOpacity ] = useState(0)
+
+
     useEffect(() => {
         if (!hasRun.current) {
-            setCookies(hubOrSub('BookAppointment3', cookies));
-            hasRun.current = true
-        }})
+            setCookies(hubOrSub('BookAppointment4', cookies));
 
+            // Fetch data in useEffect
+            fetchAppointments(tempData.priority, tempData.dates, tempData.times, (callback) => {
 
-    // MAGIC API STUFF TO CALL ALL THE FINAL APPOINTMENT DATA BY SENDING THE CONTENTS OF tempData TO THE BACKEND.
-    // APPOINTMENTS RETURNED SHOULD BE RETURNED LIKE testAppts FROM testData.js
-    const [ apptsList, setApptsList ] = useState(testAppts.slice(1))
+                if (!callback.length){
+                    setNoAppts(true)
+                }
 
-    const [ currentAppt, setCurrentAppt ] = useState(testAppts[0])
-    const [ countdown, setCountdown ] = useState(120);
-    const [ rerolls, setRerolls ] = useState(apptsList.length);
+                setApptsList(callback)
+                setCurrentAppt(callback[0])
+                setLoading(false)
+
+                try {
+                    // eslint-disable-next-line
+                    const temp = currentAppt['appt_id']
+                    setOpacity(1)
+                } catch(error) {
+                    console.log(error)
+                    setOpacity(0)
+                }
+            });
+
+            hasRun.current = true;
+        }
+    }, [cookies, currentAppt, setCookies, tempData.dates, tempData.priority,tempData.times]);
 
     useEffect(() => {
 
@@ -420,19 +385,36 @@ function BookAppointment4() {
         if (countdown < 1) {
 
             // API STUFF TO TELL BACKEND TO REMOVE THE TAKEN APPTS FROM THE 'POSSIBLES' AREA.
+            endBookingSession()
             navigate('/timeout')
         }
 
         return () => clearInterval(interval);
     })
 
-    const handleReroll = () => {
-        if (rerolls > 0) {
-            setCountdown(120)
-            setRerolls( (rerolls) => rerolls - 1 )
-            setCurrentAppt(apptsList[0])
-            setApptsList(apptsList.slice(1))
-            console.log(apptsList.length)
+    const handleForward = () => {
+        if (index < apptsList.length-1) {
+            setIndex( (index) => index + 1)
+            setCurrentAppt(apptsList[index+1])
+
+            if (!apptsList[index+1]['appt_id']){
+                setOpacity(0)
+            } else {
+                setOpacity(1)
+            }
+        }
+    }
+
+    const handlePrevious = () => {
+        if (index > 0) {
+            setIndex( (index) => index - 1)
+            setCurrentAppt(apptsList[index-1])
+
+            if (!apptsList[index-1]['appt_id']){
+                setOpacity(0)
+            } else {
+                setOpacity(1)
+            }
         }
     }
 
@@ -440,12 +422,15 @@ function BookAppointment4() {
         console.log('not implemented yet nerd')
 
         // SEND currentAppt TO THE BACKEND FOR THEM TO SAVE IN THE DB
+        chooseAppointment(currentAppt)
 
-        navigate('/appointments')
+        navigate('/home')
     }
 
     const handleExit = () => {
         // // API STUFF TO TELL BACKEND TO REMOVE THE TAKEN APPTS FROM THE 'POSSIBLES' AREA.
+
+        endBookingSession()
 
         setBookingData({priority: null,
             reason: '',
@@ -455,6 +440,21 @@ function BookAppointment4() {
         navigate('/home')
     }
 
+    if (loading) {
+        return (<div>Loading...</div>);
+    } else if (noAppts) {
+        return(
+            <>
+                <div>
+                <div className={'centerPage'} style={{'display':'flex', 'flexDirection':'column', 'alignItems':'center', 'justifyContent':'center'}}>
+                    <h1>Sadly, there are no available appointments at this time. Try booking for different times and dates.</h1>
+                    <div className={'buttonDiv'} onClick={handleExit}><h1>Go to the Homepage</h1></div>
+                </div>
+                <Timer/>
+            </div>
+            </>
+        )
+    }
 
     return(
         <>
@@ -464,14 +464,15 @@ function BookAppointment4() {
                 <h2 style={{'textAlign':'center'}}>Confirm this appointment choice or reroll</h2>
                 <div className="centerPage" style={{'flexDirection':'center', 'justifyContent':'center', 'alignItems':'center', 'gap':'0px'}}>
 
-                    <h3>Date: {currentAppt['dates']}</h3>
+                    <h3>Date: {currentAppt['date']}</h3>
                     <h3>Time: {currentAppt['timeslot']}</h3>
-                    <h3>Doctor: Dr {currentAppt['staff_name']}</h3>
-                    <p style={{'color':'red'}}>You have {String(Math.floor(countdown/60)) +':'+String(countdown%60).padStart(2, '0')} left to lock your choice in, or to reroll for another appointment time.</p>
-                    <p>Rerolls left: {rerolls}</p>
+                    <h3>Doctor: {currentAppt['staff_name']}</h3>
+                    <h3 style={{'opacity':opacity}}>If you choose this appointment, you will be replacing somebody elses. Their appointment will be rescheduled.</h3>
+                    <p style={{'color':'red'}}>You have {String(Math.floor(countdown/60)) +':'+String(countdown%60).padStart(2, '0')} left to lock your choice in, or to change to for another appointment time.</p>
                     <div style={{'display':'flex', 'flexDirection':'row' ,'gap':'5px', 'justifyContent':'center', 'alignItems':'center'}}>
-                        <div className={'buttonDiv'} onClick={handleNext}><h3>Continue</h3></div>
-                        <div className={'buttonDiv'} onClick={handleReroll} style={{'pointerEvents': (rerolls===0)? 'none' : 'auto', 'cursor': (rerolls===0)? 'none' : 'pointer'}}><h3>Reroll</h3></div>
+                        <div className={'buttonDiv'} onClick={handleNext} style={{'width':'300px'}}><h3>Book!</h3></div>
+                        <div className={'buttonDiv'} onClick={handleForward} style={{'pointerEvents': (index===apptsList.length -1)? 'none' : 'auto', 'cursor': (index===apptsList.length -1)? 'none' : 'pointer','width':'300px'}}><h3>Forwards</h3></div>
+                        <div className={'buttonDiv'} onClick={handlePrevious} style={{'pointerEvents': (index===0)? 'none' : 'auto', 'cursor': (index===0)? 'none' : 'pointer', 'width':'300px'}}><h3>Backwards</h3></div>
                     </div>
                 </div>
             </div>

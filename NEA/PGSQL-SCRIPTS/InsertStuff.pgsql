@@ -12,9 +12,9 @@ BEGIN;
 INSERT INTO Appointments (patient_id, staff_id, priority, appt_date, appt_time, status)
         VALUES (
             2, 
-            5, 
+            3, 
             3, -- Assign appointment count as priority
-            '14/01/2025', 
+            '16/01/2025', 
             '09:30',
             'scheduled'
         );
