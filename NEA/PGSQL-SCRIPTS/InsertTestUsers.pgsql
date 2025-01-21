@@ -9,15 +9,14 @@ VALUES
     ('Dr. Bob', 'Brown', 'bobbrown@example.com', 'staff', 'hashfghij', decode('445566', 'hex')), -- Staff 2
     ('Dr. Clara', 'Evans', 'claraevans@example.com', 'staff', 'hashklmno', decode('778899', 'hex')); -- Staff 3
 
--- Fetch the generated user_id values for each inserted user
--- Patient Details
+
 INSERT INTO Patient_Details (patient_id, dob)
 SELECT user_id, '1990-01-15' FROM "Users" WHERE email = 'johndoe@example.com';
 
 INSERT INTO Patient_Details (patient_id, dob)
 SELECT user_id, '1985-06-22' FROM "Users" WHERE email = 'janesmith@example.com';
 
--- Staff Details
+
 INSERT INTO Staff_Details (staff_id, verified)
 SELECT user_id, 'Y' FROM "Users" WHERE email = 'alicejohnson@example.com';
 

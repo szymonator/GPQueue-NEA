@@ -2,10 +2,9 @@ from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
 import psycopg2
-import datetime
-import calendar
 import os
 from dotenv import load_dotenv
+import datetime
 
 from MyHash import custom_hash
 from fetch_dates import processing_dates
@@ -178,6 +177,156 @@ def endBookingSession():
     confirmation = end_booking_session(id)
 
     return jsonify({'msg':confirmation, 'error':None})
+
+
+@app.route('/fetchPast', methods=['GET'])
+@jwt_required()
+def fetchPast():
+    id = get_jwt_identity()
+    type = request.args.get('type')
+
+    conn = psycopg2.connect(host=conn_config[0], dbname=conn_config[1], user=conn_config[2], password=conn_config[3], port=conn_config[4])
+    cur = conn.cursor()
+
+    if type == 'patient':
+
+        cur.execute('''SELECT staff_id, appt_time, TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
+                    FROM appointments
+                    WHERE patient_id = %s AND status='completed' ''', (id,))
+        result = cur.fetchall()
+        if result == []:
+            return jsonify({'error':'no appts'})
+
+        ids = tuple([i[0] for i in result])
+        cur.execute('''SELECT user_id, f_name, l_name
+                    FROM staff_view
+                    WHERE verified='Y' AND user_id IN %s''', (ids,))
+        staff_list = cur.fetchall()
+
+        staff_dict = {}
+        for member in staff_list:
+            staff_dict[member[0]] = member[1]+ ' ' +member[2]
+
+        appts = [{'staff_name':staff_dict[i[0]], 'appt_time':i[1], 'appt_date':i[2], 'appt_details':i[3]} for i in result]
+
+    
+    elif type == 'staff':
+
+        cur.execute('''SELECT patient_id, appt_time, TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
+                    FROM appointments
+                    WHERE staff_id = %s AND status='completed' ''', (id,))
+        result = cur.fetchall()
+        if result == []:
+            return jsonify({'error':'no appts'})
+
+        ids = tuple([i[0] for i in result])
+        cur.execute('''SELECT user_id, f_name, l_name
+                    FROM patient_view
+                    WHERE user_id IN %s''', (ids,))
+        patient_list = cur.fetchall()
+
+        patient_dict = {}
+        for member in patient_list:
+            patient_dict[member[0]] = member[1]+ ' ' +member[2]
+
+        appts = [{'patient_name':patient_dict[i[0]], 'appt_time':i[1], 'appt_date':i[2], 'appt_details':i[3]} for i in result]
+        
+    cur.close()
+    conn.close()
+
+    return jsonify({'appts':appts})
+
+
+@app.route('/fetchFuture', methods=['GET'])
+@jwt_required()
+def fetchFuture():
+    id = get_jwt_identity()
+    type = request.args.get('type')
+
+    conn = psycopg2.connect(host=conn_config[0], dbname=conn_config[1], user=conn_config[2], password=conn_config[3], port=conn_config[4])
+    cur = conn.cursor()
+
+    if type == 'patient':
+
+        cur.execute('''SELECT staff_id, appt_time, TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
+                    FROM appointments
+                    WHERE patient_id = %s AND status='scheduled' ''', (id,))
+        result = cur.fetchall()
+        if result == []:
+            return jsonify({'error':'no appts'})
+
+        ids = tuple([i[0] for i in result])
+        cur.execute('''SELECT user_id, f_name, l_name
+                    FROM staff_view
+                    WHERE verified='Y' AND user_id IN %s''', (ids,))
+        staff_list = cur.fetchall()
+
+        staff_dict = {}
+        for member in staff_list:
+            staff_dict[member[0]] = member[1]+ ' ' +member[2]
+
+        appts = [{'staff_name':staff_dict[i[0]], 'appt_time':i[1], 'appt_date':i[2], 'appt_details':i[3]} for i in result]
+        
+    
+    elif type == 'staff':
+
+        cur.execute('''SELECT patient_id, appt_time, TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
+                    FROM appointments
+                    WHERE staff_id = %s AND status='scheduled' ''', (id,))
+        result = cur.fetchall()
+        if result == []:
+            return jsonify({'error':'no appts'})
+
+        ids = tuple([i[0] for i in result])
+        cur.execute('''SELECT user_id, f_name, l_name
+                    FROM patient_view
+                    WHERE user_id IN %s''', (ids,))
+        patient_list = cur.fetchall()
+
+        patient_dict = {}
+        for member in patient_list:
+            patient_dict[member[0]] = member[1]+ ' ' +member[2]
+
+        appts = [{'patient_name':patient_dict[i[0]], 'appt_time':i[1], 'appt_date':i[2], 'appt_details':i[3]} for i in result]
+        
+    cur.close()
+    conn.close()
+        
+    return jsonify({'appts': appts})
+
+
+@app.route('/fetchApptAmount', methods=['GET'])
+@jwt_required()
+def fetchApptAmount():
+    id = get_jwt_identity()
+    type = request.args.get('type')
+
+    conn = psycopg2.connect(host=conn_config[0], dbname=conn_config[1], user=conn_config[2], password=conn_config[3], port=conn_config[4])
+    cur = conn.cursor()
+
+    if type == 'patient':
+        cur.execute('''SELECT appt_id
+                    FROM appointments
+                    WHERE status = 'scheduled' AND patient_id = %s ''', (id,))
+        amount = len(cur.fetchall())
+        print(amount)
+        return jsonify({'amount':amount})
+    
+    elif type == 'staff':
+        cur.execute('''SELECT appt_id
+                    FROM appointments
+                    WHERE status = 'scheduled' AND staff_id = %s ''', (id,))
+        amount = len(cur.fetchall())
+        
+        now = datetime.datetime.now()
+        today = now.strftime('%d/%m/%Y')
+        cur.execute('''SELECT appt_id
+                    FROM appointments
+                    WHERE status = 'scheduled' AND staff_id = %s AND appt_date = %s''', (id, today))
+        today_amount = len(cur.fetchall())
+        print(amount)
+        print(today_amount)
+        return jsonify({'amount':amount, 'todayAmount':today_amount})
 
 # starts the backend
 if __name__ == '__main__':

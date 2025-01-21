@@ -119,5 +119,14 @@ export const testAppts = [
     [224, '04/01/2025', '9:00', 'Ali'],
     [237, '05/01/2025', '20:30', 'Dalik']
 ]
-  
+
+
+
+
+export const futureAppts = [
+                    {'appt_date':'03/02/2025', 'appt_time':'13:30', 'staff_name':'Daniel Dalik', 'appt_details':'Persistent fever'},
+                    {'appt_date':'04/02/2025', 'appt_time':'14:30', 'staff_name':'Callum Palmer', 'appt_details':'Sleep problems'},
+                    {'appt_date':'05/02/2025', 'appt_time':'15:30', 'staff_name':'Eli Tipping', 'appt_details':'Minor infection'},
+                    {'appt_date':'06/02/2025', 'appt_time':'17:30', 'staff_name':'Tom Golan', 'appt_details':'Sprained joint'},
+                    ]
   

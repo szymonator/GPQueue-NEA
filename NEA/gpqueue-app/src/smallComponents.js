@@ -52,7 +52,6 @@ function Back() {
                 dates: '',
                 times: '',})
 
-            // maybe send some sort of API message to terminate processes if needed? idk, probably not
         }
 
         prevPageStack.items = cookies.prevPageStack || [];
@@ -95,8 +94,8 @@ function hubOrSub(pageName, cookies) { //UPON CALLING THIS FUNCTION, PASS IN THE
     const hubOrSubDict = {
         'home':'hub',
         'staffhome':'hub',
-        'futureAppointments':'sub',
-        'pastAppointments':'sub',
+        'FutureAppointments':'sub',
+        'PastAppointments':'sub',
         'BookAppointment1':'sub',
         'BookAppointment2':'sub',
         'BookAppointment3':'sub',

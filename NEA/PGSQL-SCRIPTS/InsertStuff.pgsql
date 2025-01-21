@@ -9,13 +9,14 @@
 
 BEGIN;
 
-INSERT INTO Appointments (patient_id, staff_id, priority, appt_date, appt_time, status)
+INSERT INTO Appointments (patient_id, staff_id, priority, appt_date, appt_time, status, appt_details)
         VALUES (
-            2, 
-            3, 
+            6, 
+            8, 
             3, -- Assign appointment count as priority
-            '16/01/2025', 
-            '09:30',
-            'scheduled'
+            '05/02/2025', 
+            '10:30',
+            'scheduled',
+            'Other'
         );
 COMMIT;

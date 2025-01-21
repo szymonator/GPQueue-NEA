@@ -141,6 +141,12 @@ function BookAppointment2() {
             // Fetch data in useEffect
             fetchDates(bookingData.priority, (callback) => {
                 if (callback === 'error'){
+                    setBookingData({
+                        priority: null,
+                        reason: '',
+                        dates: '',
+                        times: '',
+                    })
                     navigate('/home')
                 } else {
                     setFullDates(callback['dates']);
@@ -151,7 +157,7 @@ function BookAppointment2() {
 
             hasRun.current = true;
         }
-    }, [setCookies, cookies, tempData.dates, bookingData.priority, navigate]);
+    }, [setCookies, cookies, tempData.dates, bookingData.priority, navigate, setBookingData]);
 
     const now = new Date();
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -419,9 +425,10 @@ function BookAppointment4() {
     }
 
     const handleNext = () => {
-        console.log('not implemented yet nerd')
 
         // SEND currentAppt TO THE BACKEND FOR THEM TO SAVE IN THE DB
+        let temp = currentAppt
+        temp['appt_details'] = bookingData.reason
         chooseAppointment(currentAppt)
 
         navigate('/home')

@@ -133,6 +133,7 @@ def choose_appointment(appt, id):
     time = appt['timeslot']
     priority = appt['priority']
     staff_id = appt['staff_id']
+    appt_details = appt['appt_details']
 
     try:
         appt_id = appt['appt_id']
@@ -144,9 +145,9 @@ def choose_appointment(appt, id):
         # not replacing an appt
 
         cur.execute('''UPDATE appointments
-                    SET status = 'scheduled'
+                    SET status = 'scheduled', appt_details = %s
                     WHERE appt_date = %s AND appt_time = %s AND priority = %s AND staff_id = %s AND patient_id = %s ''', 
-                    (date, time, priority, staff_id, id))
+                    (appt_details ,date, time, priority, staff_id, id))
         conn.commit()
 
         cur.execute('''DELETE FROM appointments
@@ -166,15 +167,15 @@ def choose_appointment(appt, id):
                     WHERE patient_id = %s AND status = 'reserved' ''', (id, ))
         conn.commit()
 
-        cur.execute('''SELECT patient_id, priority, appt_date
+        cur.execute('''SELECT patient_id, priority, appt_date, appt_details
                     FROM appointments
                     WHERE appt_id = %s''', (appt_id, ))
-        other_id, other_priority, appt_date = cur.fetchone()
+        other_id, other_priority, appt_date, other_appt_details = cur.fetchone()
         other_priority -= 1
 
         cur.execute('''UPDATE appointments
-                    SET patient_id = %s, priority = %s, status = 'scheduled' 
-                    WHERE appt_id = %s''', (id, priority, appt_id))
+                    SET patient_id = %s, priority = %s, status = 'scheduled', appt_details = %s
+                    WHERE appt_id = %s''', (id, priority, appt_id, appt_details))
         conn.commit()
         
         cur.execute('''SELECT user_id
@@ -207,7 +208,7 @@ def choose_appointment(appt, id):
                 for staff_id in staff_list:
                     print(staff_id)
                     if not ((staff_id, timeslot) in fetched_appts):
-                        chosen_appt = (other_id, staff_id, timeslot, day_str, other_priority, 'scheduled')
+                        chosen_appt = (other_id, staff_id, timeslot, day_str, other_priority, 'scheduled', other_appt_details)
                         flag = True
                         break
                     else:
@@ -218,7 +219,7 @@ def choose_appointment(appt, id):
 
             date += timechange
     
-        cur.execute('''INSERT INTO appointments (patient_id, staff_id, appt_time, appt_date, priority, status)
+        cur.execute('''INSERT INTO appointments (patient_id, staff_id, appt_time, appt_date, priority, status, appt_details)
                     VALUES (%s, %s, %s, %s, %s, %s)''', chosen_appt)
         conn.commit()
 

@@ -4,7 +4,10 @@ export{
     fetchDates,
     fetchAppointments,
     chooseAppointment,
-    endBookingSession
+    endBookingSession,
+    fetchPast,
+    fetchFuture,
+    fetchApptAmount,
 };
 
 const domain = 'http://127.0.0.1:5000/'
@@ -161,7 +164,7 @@ function fetchAppointments(priority, dates, times, callback) {
 }
 
 
-function chooseAppointment(appt){
+function chooseAppointment(appt, callback){
     const token = sessionStorage.getItem('jwt')
 
     fetch(domain + 'chooseAppointment', {
@@ -185,7 +188,7 @@ function chooseAppointment(appt){
             }
             console.log(data['msg'])
             const temp = data['msg']
-            return temp
+            callback(temp)
         })
 
         .catch(error => {
@@ -218,11 +221,122 @@ function endBookingSession(callback){
             }
             console.log(data['msg'])
             const temp = data['msg']
-            return temp
+            callback(temp)
         })
 
         .catch(error => {
             console.log('Entering catch block');
             console.error('Error:', error.message || error);
+        });
+}
+
+
+function fetchPast(type, callback){
+    const token = sessionStorage.getItem('jwt')
+
+    fetch(domain + `fetchPast?type=${type}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`},
+        credentials: 'include'
+    })
+
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("fetch failed :(")}
+                return response.json()
+        })
+
+        .then((data) => {
+            if (data['error']){
+                throw new Error(data['error'])
+            }
+            console.log(data['appts'])
+            const temp = data['appts']
+            callback(temp)
+        })
+
+        .catch(error => {
+            console.log('Entering catch block');
+            console.error('Error:', error.message || error);
+            return error
+        });
+}
+
+
+
+function fetchFuture(type, callback){
+    const token = sessionStorage.getItem('jwt')
+
+    fetch(domain + `fetchFuture?type=${type}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`},
+        credentials: 'include'
+    })
+
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("fetch failed :(")}
+                return response.json()
+        })
+
+        .then((data) => {
+            if (data['error']){
+                throw new Error(data['error'])
+            }
+            console.log(data['appts'])
+            const temp = data['appts']
+            callback(temp)
+        })
+
+        .catch(error => {
+            console.log('Entering catch block');
+            console.error('Error:', error.message || error);
+            return error
+        });
+}
+
+
+function fetchApptAmount(type, callback){
+    const token = sessionStorage.getItem('jwt')
+
+    fetch(domain + `fetchApptAmount?type=${type}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`},
+        credentials: 'include'
+    })
+
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("fetch failed :(")}
+                return response.json()
+        })
+
+        .then((data) => {
+            if (data['error']){
+                throw new Error(data['error'])
+            }
+
+            if (type === 'patient'){
+                console.log(data['amount'])
+                const temp = data['amount']
+                callback(temp)
+            } else {
+                console.log(data['amount'], data['todayAmount'])
+                const temp = [data['amount'], data['todayAmount']]
+                callback(temp)
+            }
+            
+        })
+
+        .catch(error => {
+            console.log('Entering catch block');
+            console.error('Error:', error.message || error);
+            return error
         });
 }
