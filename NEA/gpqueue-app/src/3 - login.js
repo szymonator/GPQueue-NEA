@@ -34,22 +34,27 @@ function Login() {
     
         console.log('Form submitted', { Email: email, Password: password });
 
+        
         uponLogin(email, password, (callback) => {
-            console.log('User name received:', callback['name']); 
-            setCookies({
-                type: callback['type'],
-                name: callback['name'],
-                prevPageStack: [],
-                currentPage: null,
-                authBool: true
-            });
+            if (callback === 'failed') {
+                setOpacity(1)
+            } else {
+                setOpacity(0)
+                console.log('User name received:', callback['name']); 
+                setCookies({
+                    type: callback['type'],
+                    name: callback['name'],
+                    prevPageStack: [],
+                    currentPage: null,
+                    authBool: true
+                });
 
-            if (callback['type'] === 'patient') {
-                navigate('/home')
-            } else if (callback['type'] === 'staff') {
-                navigate('/StaffHome')
-            }
-        });
+                if (callback['type'] === 'patient') {
+                    navigate('/home')
+                } else if (callback['type'] === 'staff') {
+                    navigate('/StaffHome')
+                }
+        }});
     }
 
     return(
@@ -108,28 +113,7 @@ function Register() {
                 'type': type
             };
 
-            function validDate(dateString) { //returns true/false
-                
-                const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/; // #iHateRegex
-                const match = dateString.match(dateRegex);
-                console.log(match) // match = ["32/01/2007","32","01","2007"] when i input match[0]
-                
-                if (!match) {
-                    return false;
-                }
-            
-                const day = parseInt(match[1], 10);  // just converts the value, currently a str, into a base 10 int
-                const month = parseInt(match[2], 10);
-                const year = parseInt(match[3], 10);
-            
-                const date = new Date(year, month - 1, day); // checks if date is valid, 0 based indexing for months
-                return (
-                    date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
-                );
-            }
-
-            if (fname !== '' && sname !== '' && email !== '' && password !== '' && validDate(dob) && cpassword !== '') {
-                //setDetails(temp_details);
+            if (fname !== '' && sname !== '' && email !== '' && password !== '' && validDate(dob) && cpassword !== '' && validEmail(email) && validPassword(password)) {
                 console.log("Registration submitted", temp_details)
 
                 uponRegister(fname, sname, email, type, password, dob, (error) => {
@@ -209,4 +193,46 @@ function StaffApproval() {
             <h1>When it is approved, you will be able to log in by going back to the login page.</h1>
         </div>
     );
+}
+
+function validDate(dateString) { //returns true/false
+                
+    const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/; // #iHateRegex
+    const match = dateString.match(dateRegex);
+    console.log(match) // match = ["32/01/2007","32","01","2007"] when i input match[0]
+    
+    if (!match) {
+        return false;
+    }
+
+    const day = parseInt(match[1], 10);  // just converts the value, currently a str, into a base 10 int
+    const month = parseInt(match[2], 10);
+    const year = parseInt(match[3], 10);
+
+    const date = new Date(year, month - 1, day); // checks if date is valid, 0 based indexing for months
+    return (
+        date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
+    );
+}
+
+function validEmail(emailString){
+
+    const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i
+    const match = emailString.match(emailRegex)
+    console.log(match)
+
+    return match
+}
+
+function validPassword(passwordString){
+
+    const specialRegex = /[!@#$%^&**(){}'":;£§~_+=`,.<>?/]/
+    const capitalRegex = /[A-Z]/
+    const lowerRegex = /[a-z]/
+    const numberRegex = /[0-9]/
+    const match1 = passwordString.match(specialRegex)
+    const match2 = passwordString.match(capitalRegex)
+    const match3 = passwordString.match(lowerRegex)
+    const match4 = passwordString.match(numberRegex)
+    return match1 && match2 && match3 && match4 && passwordString.length > 10 
 }

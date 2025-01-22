@@ -130,6 +130,9 @@ def register():
 @jwt_required()
 def fetch_dates():
     priority = request.args.get('priority')
+    if not priority or priority == 'null':
+        end_booking_session(id)
+        return jsonify({'error': 'No appt passed'}), 400
     dates = processing_dates(priority) #outsourced to another file to reduce clutter
     if dates == 'no staff':
         return jsonify({'message':'unsuccessful', 'error':'no staff', 'dates':None})
@@ -146,6 +149,10 @@ def fetchAppointments():
     times = data.get('times')
     id = get_jwt_identity()
 
+    if not priority or priority == 'null':
+        end_booking_session(id)
+        return jsonify({'error': 'No appt passed'}), 400
+
     print(times)
     print(dates)
     print(priority)
@@ -154,7 +161,7 @@ def fetchAppointments():
 
     print('hi')
 
-    return jsonify({'message':'fetched successfully', 'appts':appointments, 'error':None}) 
+    return jsonify({'message':'fetched successfully', 'appts':appointments, 'error':None}), 201
 
 
 @app.route('/chooseAppointment', methods=['DELETE'])
@@ -163,10 +170,14 @@ def chooseAppointment():
     data = request.get_json()
     appt = data.get('appt')
     id = get_jwt_identity()
+    if not appt or appt == 'null':
+        end_booking_session(id)
+        return jsonify({'error': 'No appt passed'}), 400
+    
 
     confirmation = choose_appointment(appt, id)
 
-    return jsonify({'msg':confirmation, 'error':None})
+    return jsonify({'msg':confirmation, 'error':None}), 204
 
 
 @app.route('/endBookingSession', methods=['DELETE'])
@@ -176,7 +187,7 @@ def endBookingSession():
 
     confirmation = end_booking_session(id)
 
-    return jsonify({'msg':confirmation, 'error':None})
+    return jsonify({'msg':confirmation, 'error':None}), 204
 
 
 @app.route('/fetchPast', methods=['GET'])
@@ -184,6 +195,8 @@ def endBookingSession():
 def fetchPast():
     id = get_jwt_identity()
     type = request.args.get('type')
+    if not type:
+        return jsonify({'error': 'No type passed'}), 400
 
     conn = psycopg2.connect(host=conn_config[0], dbname=conn_config[1], user=conn_config[2], password=conn_config[3], port=conn_config[4])
     cur = conn.cursor()
@@ -234,7 +247,7 @@ def fetchPast():
     cur.close()
     conn.close()
 
-    return jsonify({'appts':appts})
+    return jsonify({'appts':appts}), 200
 
 
 @app.route('/fetchFuture', methods=['GET'])
@@ -242,6 +255,8 @@ def fetchPast():
 def fetchFuture():
     id = get_jwt_identity()
     type = request.args.get('type')
+    if type == 'null':
+        return jsonify({'error': 'No type passed'}), 400
 
     conn = psycopg2.connect(host=conn_config[0], dbname=conn_config[1], user=conn_config[2], password=conn_config[3], port=conn_config[4])
     cur = conn.cursor()
@@ -292,7 +307,7 @@ def fetchFuture():
     cur.close()
     conn.close()
         
-    return jsonify({'appts': appts})
+    return jsonify({'appts': appts}), 200
 
 
 @app.route('/fetchApptAmount', methods=['GET'])
@@ -300,6 +315,7 @@ def fetchFuture():
 def fetchApptAmount():
     id = get_jwt_identity()
     type = request.args.get('type')
+    print(type)
 
     conn = psycopg2.connect(host=conn_config[0], dbname=conn_config[1], user=conn_config[2], password=conn_config[3], port=conn_config[4])
     cur = conn.cursor()
@@ -310,7 +326,7 @@ def fetchApptAmount():
                     WHERE status = 'scheduled' AND patient_id = %s ''', (id,))
         amount = len(cur.fetchall())
         print(amount)
-        return jsonify({'amount':amount})
+        return jsonify({'amount':amount}), 200
     
     elif type == 'staff':
         cur.execute('''SELECT appt_id
@@ -326,7 +342,9 @@ def fetchApptAmount():
         today_amount = len(cur.fetchall())
         print(amount)
         print(today_amount)
-        return jsonify({'amount':amount, 'todayAmount':today_amount})
+        return jsonify({'amount':amount, 'todayAmount':today_amount}), 200
+    else:
+        return jsonify({'error': 'No type passed'}), 400
 
 # starts the backend
 if __name__ == '__main__':

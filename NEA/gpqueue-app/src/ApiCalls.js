@@ -55,6 +55,7 @@ function uponLogin(email, password, callback) {
         })
         .catch((error) => {
             console.error('Error:', error);
+            callback('failed')
         });
 
     }

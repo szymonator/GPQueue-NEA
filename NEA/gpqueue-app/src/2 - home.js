@@ -23,16 +23,16 @@ function PatientHome() {
     const [ appointmentAmount, setAppointmentAmount ] = useState('X')
 
     let { cookies, setCookies } = useCookies();
-    if (!cookies.authBool) {navigate('/login')};
     useEffect(() => {
         if (!hasRun.current) {
+            if (!cookies.authBool) {navigate('/login')};
             setCookies(hubOrSub('home', cookies));
             hasRun.current = true
             fetchApptAmount(cookies.type, (callback) =>{
                 setAppointmentAmount(callback)
                 console.log(callback)
             })
-        }}, [cookies, setCookies])
+        }}, [cookies, setCookies, navigate])
 
     //API STUFF TO GET APPOINTMENT AMOUNT WOW! (in a useEffect)
 
@@ -84,16 +84,17 @@ function StaffHome() {
     const [ appointmentAmount, setAppointmentAmount ] = useState(0);
     const [ amountToday, setAmountToday ] = useState(0);
 
-    if (!cookies.authBool) {navigate('/login')};
+    
     useEffect(() => {
         if (!hasRun.current) {
+            if (!cookies.authBool) {navigate('/login')};
             setCookies(hubOrSub('StaffHome', cookies));
             hasRun.current = true
         fetchApptAmount(cookies.type, (callback) =>{
             setAppointmentAmount(callback[0])
             setAmountToday(callback[1])
         })
-        }}, [cookies, setCookies])
+        }}, [cookies, setCookies, navigate])
 
     //API STUFF TO GET APPOINTMENT AMOUNT WOW!
 
@@ -141,9 +142,10 @@ function FutureAppts(){
     const [ currentFutureAppts, setCurrentFutureAppts ] = useState([]);
     let buttons = <></>
 
-    if (!cookies.authBool) {navigate('/login')};
+    
     useEffect(() => {
         if (!hasRun.current) {
+            if (!cookies.authBool) {navigate('/login')};
             setCookies(hubOrSub('FutureAppointments', cookies));
             hasRun.current = true
             fetchFuture(cookies.type, (callback) => {
@@ -156,7 +158,7 @@ function FutureAppts(){
             })
         
         }
-        }, [cookies, setCookies])
+        }, [cookies, setCookies, navigate])
 
     
 

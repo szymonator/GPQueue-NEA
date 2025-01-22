@@ -1,7 +1,14 @@
-const callback = []
-let temp = []
-for (let n = 0; n<(callback.length/3); n++) {
-    temp.push(callback.slice(n*3,3*n+3))
+function validPassword(passwordString){
+
+    const specialRegex = /[!@#$%^&**(){}'":;£§~_+=`,.<>?/]/
+    const capitalRegex = /[A-Z]/
+    const lowerRegex = /[a-z]/
+    const numberRegex = /[0-9]/
+    const match1 = passwordString.match(specialRegex)
+    const match2 = passwordString.match(capitalRegex)
+    const match3 = passwordString.match(lowerRegex)
+    const match4 = passwordString.match(numberRegex)
+    return match1 && match2 && match3 && match4 && passwordString.length > 10 
 }
 
-console.log(temp[0])
+console.log(validPassword('Hellooooo123*'))
