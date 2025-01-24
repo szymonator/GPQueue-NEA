@@ -46,7 +46,11 @@ function Login() {
                     name: callback['name'],
                     prevPageStack: [],
                     currentPage: null,
-                    authBool: true
+                    backUsed : false,
+                    authBool: true,
+                    redoFetch: false,
+                    fetchFunction: null,
+                    data: {}
                 });
 
                 if (callback['type'] === 'patient') {
@@ -130,7 +134,11 @@ function Register() {
                         name: fname+' '+sname,
                         prevPageStack: [],
                         currentPage: null,
-                        authBool: true
+                        backUsed : false,
+                        authBool: false,
+                        redoFetch: false,
+                        fetchFunction: null,
+                        data: {},
                     });
 
                     console.log(type)

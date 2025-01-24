@@ -11,7 +11,11 @@ export const CookiesProvider = ({ children }) => {
         prevPageStack: [],
         currentPage: null,
         backUsed : false,
-        authBool: false
+        authBool: false,
+        redoFetch: false,
+        fetchFunction: null,
+        data: {},
+        
     });
 
     return (

@@ -28,7 +28,7 @@ function BookAppointment1() {
 
     const hasRun = useRef(false);
 
-    if (!cookies.authBool) {navigate('/login')};
+    if (!cookies.authBool | !sessionStorage.getItem('jwt')) {navigate('/login')};
     useEffect(() => {
         if (!hasRun.current) {
             setCookies(hubOrSub('BookAppointment1', cookies));
@@ -127,7 +127,8 @@ function BookAppointment2() {
     const [currentDates, setCurrentDates] = useState(null); 
     const [loading, setLoading] = useState(true);
 
-    if (!cookies.authBool) {
+
+    if (!cookies.authBool | !sessionStorage.getItem('jwt')) {
         navigate('/login');
     }
 
@@ -140,6 +141,7 @@ function BookAppointment2() {
 
             // Fetch data in useEffect
             fetchDates(bookingData.priority, (callback) => {
+                console.log(callback)
                 if (callback === 'error'){
                     setBookingData({
                         priority: null,
@@ -267,7 +269,7 @@ function BookAppointment3() {
     const [ selection, setSelection] = useState(''); 
     const [ opacity, setOpacity ] = useState(0);
 
-    if (!cookies.authBool) {navigate('/login')};
+    if (!cookies.authBool | !sessionStorage.getItem('jwt')) {navigate('/login')};
     useEffect(() => {
         if (!hasRun.current) {
             setCookies(hubOrSub('BookAppointment3', cookies));
@@ -340,7 +342,8 @@ function BookAppointment4() {
     const { bookingData, setBookingData } = useBooking();
     const tempData = bookingData
 
-    if (!cookies.authBool) {
+    if (!cookies.authBool | !sessionStorage.getItem('jwt')) {
+        endBookingSession()
         navigate('/login');
     }
 
@@ -355,32 +358,33 @@ function BookAppointment4() {
 
     useEffect(() => {
         if (!hasRun.current) {
+            hasRun.current = true;
             setCookies(hubOrSub('BookAppointment4', cookies));
-
             // Fetch data in useEffect
             fetchAppointments(tempData.priority, tempData.dates, tempData.times, (callback) => {
-
+                console.log(callback)
                 if (!callback.length){
                     setNoAppts(true)
-                }
+                } else {
 
-                setApptsList(callback)
-                setCurrentAppt(callback[0])
-                setLoading(false)
+                    setApptsList(callback)
+                    setCurrentAppt(callback[0])
+                    setLoading(false)
 
-                try {
-                    // eslint-disable-next-line
-                    const temp = currentAppt['appt_id']
-                    setOpacity(1)
-                } catch(error) {
-                    console.log(error)
-                    setOpacity(0)
+                    try {
+                        // eslint-disable-next-line
+                        const temp = currentAppt['appt_id']
+                        setOpacity(1)
+                    } catch(error) {
+                        console.log(error)
+                        setOpacity(0)
+                    }
                 }
             });
-
-            hasRun.current = true;
         }
-    }, [cookies, currentAppt, setCookies, tempData.dates, tempData.priority,tempData.times]);
+
+            
+        }, [cookies, currentAppt, setCookies, tempData, navigate, setBookingData]);
 
     useEffect(() => {
 
@@ -391,8 +395,14 @@ function BookAppointment4() {
         if (countdown < 1) {
 
             // API STUFF TO TELL BACKEND TO REMOVE THE TAKEN APPTS FROM THE 'POSSIBLES' AREA.
-            endBookingSession()
-            navigate('/timeout')
+            endBookingSession((callback) => {
+                console.log(callback)
+                setBookingData({priority: null,
+                    reason: '',
+                    dates: '',
+                    times: '',})
+                navigate('/timeout')
+            })
         }
 
         return () => clearInterval(interval);
@@ -429,22 +439,30 @@ function BookAppointment4() {
         // SEND currentAppt TO THE BACKEND FOR THEM TO SAVE IN THE DB
         let temp = currentAppt
         temp['appt_details'] = bookingData.reason
-        chooseAppointment(currentAppt)
+        chooseAppointment(currentAppt, (callback)=>{
+            console.log(callback)
+            setBookingData({priority: null,
+                reason: '',
+                dates: '',
+                times: '',})
+            navigate('/home')
+        })
 
-        navigate('/home')
+        
     }
 
     const handleExit = () => {
         // // API STUFF TO TELL BACKEND TO REMOVE THE TAKEN APPTS FROM THE 'POSSIBLES' AREA.
 
-        endBookingSession()
-
-        setBookingData({priority: null,
-            reason: '',
-            dates: '',
-            times: '',})
-
-        navigate('/home')
+        endBookingSession((callback) => {
+            console.log(callback)
+            setBookingData({priority: null,
+                reason: '',
+                dates: '',
+                times: '',})
+    
+            navigate('/home')
+        })
     }
 
     if (loading) {

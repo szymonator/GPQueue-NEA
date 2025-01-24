@@ -12,3 +12,9 @@ function validPassword(passwordString){
 }
 
 console.log(validPassword('Hellooooo123*'))
+
+
+const functionCopy = validPassword
+
+console.log(functionCopy('Hellooooo123*'))
+console.log(functionCopy)

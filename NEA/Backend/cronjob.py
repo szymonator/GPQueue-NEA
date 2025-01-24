@@ -33,7 +33,6 @@ yag = yagmail.SMTP("gpqueue.nea@gmail.com", os.getenv('APP_PWD'))
 
 
 #week before reminder for patients
-time = '09:01'
 if time == '09:01':
     cur.execute('''SELECT patient_id 
                 FROM appointments 

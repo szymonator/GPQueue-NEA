@@ -2,10 +2,10 @@ DO $$
 BEGIN
     EXECUTE 'SET session_replication_role = replica';
 
-    EXECUTE 'DELETE FROM "Users" WHERE user_id=2';
-    EXECUTE 'DELETE FROM patient_details WHERE patient_id=2';
+    -- EXECUTE 'DELETE FROM "Users" WHERE user_id=5';
+    -- EXECUTE 'DELETE FROM staff_details WHERE staff_id=5';
 
-    --EXECUTE 'DELETE FROM Appointments';
+    -- EXECUTE 'DELETE FROM Appointments';
     --EXECUTE 'DELETE FROM Patient_Details';
     --EXECUTE 'DELETE FROM Staff_Details';
 

@@ -25,7 +25,7 @@ function PatientHome() {
     let { cookies, setCookies } = useCookies();
     useEffect(() => {
         if (!hasRun.current) {
-            if (!cookies.authBool) {navigate('/login')};
+            if (!cookies.authBool | !sessionStorage.getItem('jwt')) {navigate('/login')};
             setCookies(hubOrSub('home', cookies));
             hasRun.current = true
             fetchApptAmount(cookies.type, (callback) =>{
@@ -37,8 +37,9 @@ function PatientHome() {
     //API STUFF TO GET APPOINTMENT AMOUNT WOW! (in a useEffect)
 
     const sendToBook = (event) => {
-        console.log('sendToBook')
-        navigate('/BookAppointment1');
+        if (appointmentAmount < 3){
+            console.log('sendToBook')
+            navigate('/BookAppointment1');}
     }
 
     const sendToFuture = (event) => {
@@ -47,9 +48,10 @@ function PatientHome() {
     }
 
     const sendToPast = (event) => {
-        console.log('sendToPast')
-        navigate('/PastAppointments')
-    }
+            console.log('sendToPast')
+            navigate('/PastAppointments')
+        }
+        
 
     return(
         <>
@@ -57,14 +59,14 @@ function PatientHome() {
             <div style={{ position: "relative", width: "100%" }}>
                 <div className="centerPage">
                     <h1>Home</h1>
-                    <div className="buttonDiv" onClick={sendToBook}>
+                    <div className="buttonDiv" onClick={sendToBook} style={{'pointerEvents': appointmentAmount<3 ? "auto" : "none", 'cursor': appointmentAmount<3 ? "pointer" : "not-allowed"}}>
                         <h2>Book an Appointment</h2>
                     </div>
                     <h3>You have {appointmentAmount} appointment(s) coming up in the future.</h3>
                     <div className="buttonDiv" onClick={sendToFuture}>
                         <h2>View Future Appointments</h2>
                     </div>
-                    <div className="buttonDiv" onClick={sendToPast}>
+                    <div className="buttonDiv" onClick={sendToPast} >
                         <h2>View Past Appointments</h2>
                     </div>
                 </div>
@@ -87,7 +89,7 @@ function StaffHome() {
     
     useEffect(() => {
         if (!hasRun.current) {
-            if (!cookies.authBool) {navigate('/login')};
+            if (!cookies.authBool | !sessionStorage.getItem('jwt')) {navigate('/login')};
             setCookies(hubOrSub('StaffHome', cookies));
             hasRun.current = true
         fetchApptAmount(cookies.type, (callback) =>{
@@ -145,16 +147,18 @@ function FutureAppts(){
     
     useEffect(() => {
         if (!hasRun.current) {
-            if (!cookies.authBool) {navigate('/login')};
+            if (!cookies.authBool | !sessionStorage.getItem('jwt')) {navigate('/login')};
             setCookies(hubOrSub('FutureAppointments', cookies));
             hasRun.current = true
             fetchFuture(cookies.type, (callback) => {
-                let temp = []
-                for (let n = 0; n<(callback.length/3); n++) {
-                    temp.push(callback.slice(n*3,3*n+3))
+                if (callback !== 'error'){
+                    let temp = []
+                    for (let n = 0; n<(callback.length/3); n++) {
+                        temp.push(callback.slice(n*3,3*n+3))
+                    }
+                    setFullFutureAppts(temp)
+                    setCurrentFutureAppts(temp[0])
                 }
-                setFullFutureAppts(temp)
-                setCurrentFutureAppts(temp[0])
             })
         
         }
@@ -230,19 +234,21 @@ function PastAppts(){
     const [ currentPastAppts, setCurrentPastAppts ] = useState([]);
     let buttons = <></>
 
-    if (!cookies.authBool) {navigate('/login')};
+    if (!cookies.authBool | !sessionStorage.getItem('jwt')) {navigate('/login')};
     useEffect(() => {
         if (!hasRun.current) {
             setCookies(hubOrSub('PastAppointments', cookies));
             hasRun.current = true
 
             fetchPast(cookies.type, (callback) => {
-                let temp = []
-                for (let n = 0; n<(callback.length/3); n++) {
-                    temp.push(callback.slice(n*3,3*n+3))
+                if (callback !== 'error'){
+                    let temp = []
+                    for (let n = 0; n<(callback.length/3); n++) {
+                        temp.push(callback.slice(n*3,3*n+3))
+                    }
+                    setFullPastAppts(temp)
+                    setCurrentPastAppts(temp[0])
                 }
-                setFullPastAppts(temp)
-                setCurrentPastAppts(temp[0])
             })
         }
 

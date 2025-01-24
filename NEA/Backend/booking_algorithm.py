@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import psycopg2
 from datetime import datetime
 import datetime as datetime2
+import yagmail
 
 load_dotenv()
 conn_config = [os.getenv("HOST"), os.getenv("DBNAME"), os.getenv("USER"), os.getenv("PASSWORD"), os.getenv("PORT")]
@@ -222,6 +223,18 @@ def choose_appointment(appt, id):
         cur.execute('''INSERT INTO appointments (patient_id, staff_id, appt_time, appt_date, priority, status, appt_details)
                     VALUES (%s, %s, %s, %s, %s, %s)''', chosen_appt)
         conn.commit()
+
+        cur.execute('''SELECT email
+                    FROM "Users"
+                    WHERE user_id = %s''', (other_id, ))
+        email = cur.fetchone()[0]
+        yag = yagmail.SMTP("gpqueue.nea@gmail.com", os.getenv('APP_PWD'))
+        yag.send(
+                to=email,
+                subject="Important Appointment Information",
+                contents=f'''Your appointment has been rescheduled.
+                Check the website for more details.'''
+            )
 
     cur.close()
     conn.close()

@@ -1,10 +1,11 @@
 from flask import Flask, request, jsonify
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, create_refresh_token
 from flask_cors import CORS
 import psycopg2
 import os
 from dotenv import load_dotenv
 import datetime
+from datetime import timedelta
 
 from MyHash import custom_hash
 from fetch_dates import processing_dates
@@ -15,6 +16,8 @@ load_dotenv()
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
 app.config['JWT_TOKEN_LOCATION'] = ['headers']
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=15)
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 jwt = JWTManager(app)
 CORS(app, supports_credentials=True, origins=['http://localhost:3000'], expose_headers=["Content-Type", "Authorization"])
 
@@ -56,7 +59,8 @@ def get_token():
     
     id = fetched[0]
     token = create_access_token(identity=id)
-    response = jsonify({'message': 'Login successful', 'token':token, 'error':None})
+    refresh_token = create_refresh_token(identity=id)
+    response = jsonify({'message': 'Login successful', 'token':token, 'refresh_token':refresh_token, 'error':None})
     return response
     
 
@@ -122,7 +126,8 @@ def register():
     conn.close()
 
     token = create_access_token(identity=id)
-    response = jsonify({'message': 'registration successful', 'token':token, 'error':None})
+    refresh_token = create_refresh_token(identity=id)
+    response = jsonify({'message': 'registration successful', 'token':token, 'refresh_token':refresh_token, 'error':None})
     return response
 
 
@@ -158,8 +163,6 @@ def fetchAppointments():
     print(priority)
 
     appointments = fetch_appointments(priority, dates, times, id) #outsourced to another file to reduce clutter
-
-    print('hi')
 
     return jsonify({'message':'fetched successfully', 'appts':appointments, 'error':None}), 201
 
@@ -221,6 +224,10 @@ def fetchPast():
             staff_dict[member[0]] = member[1]+ ' ' +member[2]
 
         appts = [{'staff_name':staff_dict[i[0]], 'appt_time':i[1], 'appt_date':i[2], 'appt_details':i[3]} for i in result]
+        cur.close()
+        conn.close()
+
+        return jsonify({'appts':appts}), 200
 
     
     elif type == 'staff':
@@ -243,11 +250,11 @@ def fetchPast():
             patient_dict[member[0]] = member[1]+ ' ' +member[2]
 
         appts = [{'patient_name':patient_dict[i[0]], 'appt_time':i[1], 'appt_date':i[2], 'appt_details':i[3]} for i in result]
-        
-    cur.close()
-    conn.close()
+        cur.close()
+        conn.close()
 
-    return jsonify({'appts':appts}), 200
+        return jsonify({'appts':appts}), 200
+        
 
 
 @app.route('/fetchFuture', methods=['GET'])
@@ -345,6 +352,16 @@ def fetchApptAmount():
         return jsonify({'amount':amount, 'todayAmount':today_amount}), 200
     else:
         return jsonify({'error': 'No type passed'}), 400
+
+
+@app.route('/refreshJWT', methods=['POST'])
+@jwt_required(refresh=True)
+def refreshJWT():
+    id = get_jwt_identity()
+    new_access_token = create_access_token(identity=id)
+    return jsonify({'message':'token sent', 'token':new_access_token})
+
+
 
 # starts the backend
 if __name__ == '__main__':

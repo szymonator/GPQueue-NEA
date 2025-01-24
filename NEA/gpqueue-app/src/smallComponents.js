@@ -65,7 +65,10 @@ function Back() {
             prevPageStack: prevPageStack.items, 
             currentPage: prevPage,
             backUsed: true,
-            authBool: cookies.authBool
+            authBool: cookies.authBool,
+            redoFetch: cookies.redoFetch,
+            fetchFunction: cookies.fetchFunction,
+            data: cookies.data,
         }
 
         setCookies(newCookies);
@@ -109,7 +112,7 @@ function hubOrSub(pageName, cookies) { //UPON CALLING THIS FUNCTION, PASS IN THE
 
     if (newPageType === 'hub') {
         prevPageStack.purge()
-    } else if (newPageType === 'sub' && !cookies.backUsed) {
+    } else if (newPageType === 'sub' && !cookies.backUsed && !(prevPage === pageName)) {
         prevPageStack.push(prevPage)
     }
 
@@ -124,6 +127,9 @@ function hubOrSub(pageName, cookies) { //UPON CALLING THIS FUNCTION, PASS IN THE
         prevPageStack: prevPageStack.items, //technically stack dehydration
         currentPage: pageName,
         backUsed: backBool,
-        authBool: cookies.authBool
+        authBool: cookies.authBool,
+        redoFetch: cookies.redoFetch,
+        fetchFunction: cookies.fetchFunction,
+        data: cookies.data,
     }
 }

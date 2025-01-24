@@ -16,14 +16,13 @@ cur.execute('''SELECT staff_id, appt_time, TO_CHAR(appt_date, 'DD/MM/YYYY'), app
 result = cur.fetchall()
 print(result)
 
-print(result[0][2])
-
 ids = tuple(result)
 print(ids)
 
-ids = tuple([i[0] for i in result])
-cur.execute('''SELECT user_id, f_name, l_name
-            FROM staff_view
-            WHERE verified='Y' AND user_id IN %s''', (ids,))
-staff_list = cur.fetchall()
-print(staff_list)
+
+cur.execute('''SELECT email
+                    FROM "Users"
+                    WHERE user_id = %s''', (1, ))
+email = cur.fetchone()[0]
+
+print(email)
