@@ -13,18 +13,23 @@ export{
 function TopBar() {
 
     let { cookies } = useCookies();
-    const patientName = cookies.name;
+    const name = cookies.name;
     const navigate = useNavigate();
 
     const sendHome = (event) => {
-        navigate('/home');
+        if (cookies.type === 'patient'){
+            navigate('/home');
+        } else {
+            navigate('/StaffHome')
+        }
+
     }
 
     return(
         <>
         <div className={'topBar'}>
             <img src='https://i.imgur.com/v2qKKWO.png' className={'icon'} onClick={sendHome} alt={'Logo'}/>
-            <h2>Welcome, {patientName}!</h2>
+            <h2>Welcome, {name}!</h2>
             <Timer/>
 
         </div>

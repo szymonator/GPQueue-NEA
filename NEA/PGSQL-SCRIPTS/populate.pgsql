@@ -52,27 +52,32 @@
 -- BEGIN;
 
 -- Insert appointments at 30-minute intervals
--- DO $$
--- DECLARE
---     incrementing_time TIME := '09:00';
---     end_time TIME := '20:30';
--- BEGIN
---     WHILE incrementing_time <= end_time LOOP
---         INSERT INTO Appointments (patient_id, staff_id, priority, appt_date, appt_time, status)
---         VALUES (7, 6, 1, '2025-01-26', incrementing_time::VARCHAR, 'scheduled');
+DO $$
+DECLARE
+    incrementing_time TIME := '09:00';
+    end_time TIME := '20:30';
+BEGIN
+    WHILE incrementing_time <= end_time LOOP
+        INSERT INTO Appointments (patient_id, staff_id, priority, appt_date, appt_time, status)
+        VALUES (7, 6, 3, '2025-01-26', TO_CHAR(incrementing_time, 'HH24:MI'), 'scheduled');
         
---         -- Increment the time by 30 minutes
---         incrementing_time := incrementing_time + INTERVAL '30 minutes';
---     END LOOP;
--- END $$;
+        -- Increment the time by 30 minutes
+        incrementing_time := incrementing_time + INTERVAL '30 minutes';
+    END LOOP;
+END $$;
+
+COMMIT;
+
+-- BEGIN;
+
+-- -- Update appt_time to be in the format hh:mm
+-- UPDATE Appointments
+-- SET priority = TO_CHAR(TO_TIMESTAMP(appt_time, 'HH24:MI:SS'), 'HH24:MI')
+-- WHERE appt_date = '2025-01-26';
 
 -- COMMIT;
 
-BEGIN;
-
--- Update appt_time to be in the format hh:mm
-UPDATE Appointments
-SET priority = TO_CHAR(TO_TIMESTAMP(appt_time, 'HH24:MI:SS'), 'HH24:MI')
-WHERE appt_date = '2025-01-26';
-
-COMMIT;
+-- BEGIN;
+-- INSERT INTO Appointments (patient_id, staff_id, priority, appt_date, appt_time, status, appt_details)
+-- VALUES (1, 6, 1, '2025-01-31', '17:00', 'scheduled', 'scary symptom 3');
+-- COMMIT;

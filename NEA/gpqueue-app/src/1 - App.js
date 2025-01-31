@@ -33,5 +33,3 @@ export default function App() {
     </CookiesProvider>
   );
 }
-
-

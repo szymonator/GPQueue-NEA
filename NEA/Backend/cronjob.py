@@ -29,6 +29,7 @@ print(date, time)
 cur.execute('''UPDATE appointments
             SET status = 'completed'
             WHERE appt_date <= %s AND appt_time::TIME < %s::TIME ''', (date, time,))
+conn.commit()
 yag = yagmail.SMTP("gpqueue.nea@gmail.com", os.getenv('APP_PWD'))
 
 
@@ -48,7 +49,7 @@ if time == '09:01':
         for email in emails:
             yag.send(
                 to=email,
-                subject="Appointment Reminder",
+                subject="Appointment Reminder for Next Week",
                 contents=f'''This is your reminder email! You have an appointment in a week on {week}.
                 Check the website for more details.'''
             )
@@ -68,7 +69,7 @@ if time == '09:01':
         for email in emails:
             yag.send(
                 to=email,
-                subject="Appointment Reminder",
+                subject="Appointment Reminder for Tomorrow",
                 contents=f'''This is your reminder email! You have an appointment in a day on {day}.
                 Check the website for more details.'''
             )
@@ -89,7 +90,7 @@ if len(result) > 0:
     for email in emails:
             yag.send(
                 to=email,
-                subject="Appointment Reminder",
+                subject="30 Mintue Appointment Reminder",
                 contents=f'''This is your reminder email! You have an appointment with a patient in 30 minutes at {next_appt}.
                 Check the website for more details.'''
             )

@@ -25,7 +25,10 @@ function PatientHome() {
     let { cookies, setCookies } = useCookies();
     useEffect(() => {
         if (!hasRun.current) {
-            if (!cookies.authBool | !sessionStorage.getItem('jwt')) {navigate('/login')};
+            if (!cookies.authBool | !sessionStorage.getItem('jwt')) {
+                console.log('going back to login')
+                navigate('/login')
+            };
             setCookies(hubOrSub('home', cookies));
             hasRun.current = true
             fetchApptAmount(cookies.type, (callback) =>{

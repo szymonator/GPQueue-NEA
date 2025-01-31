@@ -139,7 +139,6 @@ function BookAppointment2() {
                 setSelection(tempData.dates);
             }
 
-            // Fetch data in useEffect
             fetchDates(bookingData.priority, (callback) => {
                 console.log(callback)
                 if (callback === 'error'){
@@ -152,8 +151,8 @@ function BookAppointment2() {
                     navigate('/home')
                 } else {
                     setFullDates(callback['dates']);
-                    setCurrentDates(callback['dates'][0]); // Set the first month's data as default
-                    setLoading(false); // Mark loading as complete
+                    setCurrentDates(callback['dates'][0]); 
+                    setLoading(false); 
                 }
             });
 
@@ -343,7 +342,6 @@ function BookAppointment4() {
     const tempData = bookingData
 
     if (!cookies.authBool | !sessionStorage.getItem('jwt')) {
-        endBookingSession()
         navigate('/login');
     }
 
@@ -365,6 +363,7 @@ function BookAppointment4() {
                 console.log(callback)
                 if (!callback.length){
                     setNoAppts(true)
+                    console.log('no appts is true')
                 } else {
 
                     setApptsList(callback)
@@ -372,9 +371,9 @@ function BookAppointment4() {
                     setLoading(false)
 
                     try {
-                        // eslint-disable-next-line
-                        const temp = currentAppt['appt_id']
-                        setOpacity(1)
+                        if (callback[index]['appt_id']){
+                            setOpacity(1)
+                        }
                     } catch(error) {
                         console.log(error)
                         setOpacity(0)

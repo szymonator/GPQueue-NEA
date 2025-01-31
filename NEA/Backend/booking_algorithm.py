@@ -63,7 +63,8 @@ def fetch_appointments(priority, dates, times, id):
     
     cur.execute('''SELECT appt_id, staff_id, appt_time, appt_date, priority, status, patient_id
                 FROM appointments
-                WHERE appt_time IN %s AND appt_date IN %s AND (status != 'completed')''', 
+                WHERE appt_time IN %s AND appt_date IN %s AND (status != 'completed')
+                ORDER BY appt_date, appt_time''', 
                 (tuple([time.zfill(5) for time in times]), tuple(dates))) 
     result = cur.fetchall()
     existing_appts = []
@@ -90,8 +91,8 @@ def fetch_appointments(priority, dates, times, id):
     for appt in existing_appts:
         if [appt['date'], appt['timeslot']] not in repeated_appts_list:
             if appt['priority'] > priority and appt['status'] == 'scheduled':
-                all_appts_final.append(entry)
-                repeated_appts_list.append([entry['date'], entry['timeslot']])
+                all_appts_final.append(appt)
+                repeated_appts_list.append([appt['date'], appt['timeslot']])
             next
 
     insert = []
@@ -176,7 +177,7 @@ def choose_appointment(appt, id):
 
         cur.execute('''UPDATE appointments
                     SET patient_id = %s, priority = %s, status = 'scheduled', appt_details = %s
-                    WHERE appt_id = %s''', (id, priority, appt_id, appt_details))
+                    WHERE appt_id = %s''', (id, priority, appt_details, appt_id))
         conn.commit()
         
         cur.execute('''SELECT user_id
@@ -194,12 +195,11 @@ def choose_appointment(appt, id):
         flag = False
         while not flag:
             
-            day_str = date.strftime('%d/%m/%Y')
-            print(day_str)
+            day_str = appt_date.strftime('%d/%m/%Y')
             
             cur.execute('''SELECT staff_id, appt_time
                         FROM appointments
-                        WHERE appt_date = %s AND status != 'completed' ''', (day_str,))
+                        WHERE appt_date = %s''', (day_str,))
             fetched_appts = cur.fetchall()
             print(fetched_appts)
 
@@ -217,10 +217,15 @@ def choose_appointment(appt, id):
                 if flag:
                     break
 
-            date += timechange
+            appt_date += timechange
     
         cur.execute('''INSERT INTO appointments (patient_id, staff_id, appt_time, appt_date, priority, status, appt_details)
-                    VALUES (%s, %s, %s, %s, %s, %s)''', chosen_appt)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)''', chosen_appt)
+        conn.commit()
+
+        cur.execute('''UPDATE appointments
+                    SET status = 'scheduled'
+                    WHERE status = %s''', (f"scheduled + reserved by {id}",))
         conn.commit()
 
         cur.execute('''SELECT email

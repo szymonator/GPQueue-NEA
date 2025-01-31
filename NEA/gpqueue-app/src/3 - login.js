@@ -135,7 +135,7 @@ function Register() {
                         prevPageStack: [],
                         currentPage: null,
                         backUsed : false,
-                        authBool: false,
+                        authBool: true,
                         redoFetch: false,
                         fetchFunction: null,
                         data: {},
