@@ -28,7 +28,7 @@ print(date, time)
 
 cur.execute('''UPDATE appointments
             SET status = 'completed'
-            WHERE appt_date <= %s AND appt_time::TIME < %s::TIME ''', (date, time,))
+            WHERE appt_date <= %s AND appt_time < %s ''', (date, time,))
 conn.commit()
 yag = yagmail.SMTP("gpqueue.nea@gmail.com", os.getenv('APP_PWD'))
 

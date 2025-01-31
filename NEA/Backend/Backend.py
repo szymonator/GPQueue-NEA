@@ -206,7 +206,7 @@ def fetchPast():
 
     if type == 'patient':
 
-        cur.execute('''SELECT staff_id, appt_time, TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
+        cur.execute('''SELECT staff_id, TO_CHAR(appt_time, 'HH24:MI'), TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
                     FROM appointments
                     WHERE patient_id = %s AND status='completed' ''', (id,))
         result = cur.fetchall()
@@ -232,7 +232,7 @@ def fetchPast():
     
     elif type == 'staff':
 
-        cur.execute('''SELECT patient_id, appt_time, TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
+        cur.execute('''SELECT patient_id, TO_CHAR(appt_time, 'HH24:MI'), TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
                     FROM appointments
                     WHERE staff_id = %s AND status='completed' ''', (id,))
         result = cur.fetchall()
@@ -270,7 +270,7 @@ def fetchFuture():
 
     if type == 'patient':
 
-        cur.execute('''SELECT staff_id, appt_time, TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
+        cur.execute('''SELECT staff_id, TO_CHAR(appt_time, 'HH24:MI'), TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
                     FROM appointments
                     WHERE patient_id = %s AND status='scheduled' ''', (id,))
         result = cur.fetchall()
@@ -292,7 +292,7 @@ def fetchFuture():
     
     elif type == 'staff':
 
-        cur.execute('''SELECT patient_id, appt_time, TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
+        cur.execute('''SELECT patient_id, TO_CHAR(appt_time, 'HH24:MI'), TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
                     FROM appointments
                     WHERE staff_id = %s AND status='scheduled' ''', (id,))
         result = cur.fetchall()

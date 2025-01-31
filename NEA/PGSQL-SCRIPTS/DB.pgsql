@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS Appointments (
     staff_id INTEGER NOT NULL,
     priority INTEGER NOT NULL,
     appt_date DATE NOT NULL,
-    appt_time VARCHAR(63) NOT NULL,
+    appt_time TIME NOT NULL,
     appt_details TEXT,
     creation_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     status TEXT NOT NULL,

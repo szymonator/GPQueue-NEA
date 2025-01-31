@@ -61,7 +61,7 @@ def fetch_appointments(priority, dates, times, id):
     all_appts_final = []
     repeated_appts_list = []
     
-    cur.execute('''SELECT appt_id, staff_id, appt_time, appt_date, priority, status, patient_id
+    cur.execute('''SELECT appt_id, staff_id, TO_CHAR(appt_time, 'HH24:MI'), appt_date, priority, status, patient_id
                 FROM appointments
                 WHERE appt_time IN %s AND appt_date IN %s AND (status != 'completed')
                 ORDER BY appt_date, appt_time''', 
@@ -197,7 +197,7 @@ def choose_appointment(appt, id):
             
             day_str = appt_date.strftime('%d/%m/%Y')
             
-            cur.execute('''SELECT staff_id, appt_time
+            cur.execute('''SELECT staff_id, TO_CHAR(appt_time, 'HH24:MI')
                         FROM appointments
                         WHERE appt_date = %s''', (day_str,))
             fetched_appts = cur.fetchall()
