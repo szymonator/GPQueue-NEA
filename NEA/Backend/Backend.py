@@ -206,24 +206,15 @@ def fetchPast():
 
     if type == 'patient':
 
-        cur.execute('''SELECT staff_id, TO_CHAR(appt_time, 'HH24:MI'), TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
-                    FROM appointments
+        cur.execute('''SELECT f_name, l_name, TO_CHAR(appt_time, 'HH24:MI'), TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
+                    FROM appointments a INNER JOIN staff_view v ON a.staff_id = v.user_id
                     WHERE patient_id = %s AND status='completed' ''', (id,))
         result = cur.fetchall()
+        print(result)
         if result == []:
-            return jsonify({'error':'no appts'})
+            print({'error':'no appts'})
 
-        ids = tuple([i[0] for i in result])
-        cur.execute('''SELECT user_id, f_name, l_name
-                    FROM staff_view
-                    WHERE verified='Y' AND user_id IN %s''', (ids,))
-        staff_list = cur.fetchall()
-
-        staff_dict = {}
-        for member in staff_list:
-            staff_dict[member[0]] = member[1]+ ' ' +member[2]
-
-        appts = [{'staff_name':staff_dict[i[0]], 'appt_time':i[1], 'appt_date':i[2], 'appt_details':i[3]} for i in result]
+        appts = [{'staff_name':i[0]+' '+i[1], 'appt_time':i[2], 'appt_date':i[3], 'appt_details':i[4]} for i in result]
         cur.close()
         conn.close()
 
@@ -232,24 +223,14 @@ def fetchPast():
     
     elif type == 'staff':
 
-        cur.execute('''SELECT patient_id, TO_CHAR(appt_time, 'HH24:MI'), TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
-                    FROM appointments
+        cur.execute('''SELECT f_name, l_name, TO_CHAR(appt_time, 'HH24:MI'), TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
+                    FROM appointments a INNER JOIN patient_view v ON a.patient_id = v.user_id
                     WHERE staff_id = %s AND status='completed' ''', (id,))
         result = cur.fetchall()
         if result == []:
             return jsonify({'error':'no appts'})
 
-        ids = tuple([i[0] for i in result])
-        cur.execute('''SELECT user_id, f_name, l_name
-                    FROM patient_view
-                    WHERE user_id IN %s''', (ids,))
-        patient_list = cur.fetchall()
-
-        patient_dict = {}
-        for member in patient_list:
-            patient_dict[member[0]] = member[1]+ ' ' +member[2]
-
-        appts = [{'patient_name':patient_dict[i[0]], 'appt_time':i[1], 'appt_date':i[2], 'appt_details':i[3]} for i in result]
+        appts = [{'patient_name':i[0]+' '+i[1], 'appt_time':i[2], 'appt_date':i[3], 'appt_details':i[4]} for i in result]
         cur.close()
         conn.close()
 
@@ -270,51 +251,35 @@ def fetchFuture():
 
     if type == 'patient':
 
-        cur.execute('''SELECT staff_id, TO_CHAR(appt_time, 'HH24:MI'), TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
-                    FROM appointments
+        cur.execute('''SELECT f_name, l_name, TO_CHAR(appt_time, 'HH24:MI'), TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
+                    FROM appointments a INNER JOIN staff_view v ON a.staff_id = v.user_id
                     WHERE patient_id = %s AND status='scheduled' ''', (id,))
         result = cur.fetchall()
+        print(result)
         if result == []:
-            return jsonify({'error':'no appts'})
+            print({'error':'no appts'})
 
-        ids = tuple([i[0] for i in result])
-        cur.execute('''SELECT user_id, f_name, l_name
-                    FROM staff_view
-                    WHERE verified='Y' AND user_id IN %s''', (ids,))
-        staff_list = cur.fetchall()
+        appts = [{'staff_name':i[0]+' '+i[1], 'appt_time':i[2], 'appt_date':i[3], 'appt_details':i[4]} for i in result]
+        cur.close()
+        conn.close()
 
-        staff_dict = {}
-        for member in staff_list:
-            staff_dict[member[0]] = member[1]+ ' ' +member[2]
-
-        appts = [{'staff_name':staff_dict[i[0]], 'appt_time':i[1], 'appt_date':i[2], 'appt_details':i[3]} for i in result]
+        return jsonify({'appts':appts}), 200
         
     
     elif type == 'staff':
 
-        cur.execute('''SELECT patient_id, TO_CHAR(appt_time, 'HH24:MI'), TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
-                    FROM appointments
+        cur.execute('''SELECT f_name, l_name, TO_CHAR(appt_time, 'HH24:MI'), TO_CHAR(appt_date, 'DD/MM/YYYY'), appt_details
+                    FROM appointments a INNER JOIN patient_view v ON a.patient_id = v.user_id
                     WHERE staff_id = %s AND status='scheduled' ''', (id,))
         result = cur.fetchall()
         if result == []:
             return jsonify({'error':'no appts'})
 
-        ids = tuple([i[0] for i in result])
-        cur.execute('''SELECT user_id, f_name, l_name
-                    FROM patient_view
-                    WHERE user_id IN %s''', (ids,))
-        patient_list = cur.fetchall()
+        appts = [{'patient_name':i[0]+' '+i[1], 'appt_time':i[2], 'appt_date':i[3], 'appt_details':i[4]} for i in result]
+        cur.close()
+        conn.close()
 
-        patient_dict = {}
-        for member in patient_list:
-            patient_dict[member[0]] = member[1]+ ' ' +member[2]
-
-        appts = [{'patient_name':patient_dict[i[0]], 'appt_time':i[1], 'appt_date':i[2], 'appt_details':i[3]} for i in result]
-        
-    cur.close()
-    conn.close()
-        
-    return jsonify({'appts': appts}), 200
+        return jsonify({'appts':appts}), 200
 
 
 @app.route('/fetchApptAmount', methods=['GET'])

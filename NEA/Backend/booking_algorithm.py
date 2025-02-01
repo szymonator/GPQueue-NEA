@@ -169,10 +169,10 @@ def choose_appointment(appt, id):
                     WHERE patient_id = %s AND status = 'reserved' ''', (id, ))
         conn.commit()
 
-        cur.execute('''SELECT patient_id, priority, appt_date, appt_details
-                    FROM appointments
+        cur.execute('''SELECT patient_id, priority, appt_date, appt_details, email
+                    FROM appointments a INNER JOIN patient_view v ON a.patient_id = v.user_id
                     WHERE appt_id = %s''', (appt_id, ))
-        other_id, other_priority, appt_date, other_appt_details = cur.fetchone()
+        other_id, other_priority, appt_date, other_appt_details, other_email = cur.fetchone()
         other_priority -= 1
 
         cur.execute('''UPDATE appointments
@@ -228,13 +228,9 @@ def choose_appointment(appt, id):
                     WHERE status = %s''', (f"scheduled + reserved by {id}",))
         conn.commit()
 
-        cur.execute('''SELECT email
-                    FROM "Users"
-                    WHERE user_id = %s''', (other_id, ))
-        email = cur.fetchone()[0]
         yag = yagmail.SMTP("gpqueue.nea@gmail.com", os.getenv('APP_PWD'))
         yag.send(
-                to=email,
+                to=other_email,
                 subject="Important Appointment Information",
                 contents=f'''Your appointment has been rescheduled.
                 Check the website for more details.'''
