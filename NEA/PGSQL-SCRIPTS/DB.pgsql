@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS "Users" (
     user_type VARCHAR(255) NOT NULL CHECK ( user_type IN ('patient', 'staff')),
     password_hash TEXT NOT NULL,
     salt BYTEA NOT NULL,
+    refresh_token_hash TEXT,
+    refresh_token_salt BYTEA,
     register_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -16,7 +16,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
 app.config['JWT_TOKEN_LOCATION'] = ['headers']
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=15)
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=10)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 jwt = JWTManager(app)
 CORS(app, supports_credentials=True, origins=['http://localhost:3000'], expose_headers=["Content-Type", "Authorization"])
@@ -51,17 +51,29 @@ def get_token():
             WHERE email=%s AND password_hash=%s''', 
             (email, str(password_hash)))
     fetched = cur.fetchone()
-    cur.close()
-    conn.close()
 
     if fetched == None:
+        cur.close()
+        conn.close()
         return jsonify({'message': 'Invalid credentials'}), 401
     
     id = fetched[0]
     token = create_access_token(identity=id)
     refresh_token = create_refresh_token(identity=id)
-    response = jsonify({'message': 'Login successful', 'token':token, 'refresh_token':refresh_token, 'error':None})
-    return response
+    refresh_token_hash, refresh_token_salt = custom_hash(password=refresh_token)
+
+
+    print(id, str(refresh_token_hash), refresh_token_salt)
+    cur.execute('''UPDATE "Users"
+            SET refresh_token_hash = %s, refresh_token_salt = %s
+            WHERE user_id = %s''', (str(refresh_token_hash), refresh_token_salt, id))
+    conn.commit()
+    
+    cur.close()
+    conn.close()
+    
+    return jsonify({'message': 'Login successful', 'token':token, 'refresh_token':refresh_token, 'error':None})
+
     
 
 
@@ -122,13 +134,18 @@ def register():
                     VALUES (%s, 'Y')''', (id, ))
     conn.commit()
 
-    cur.close()
-    conn.close()
-
     token = create_access_token(identity=id)
     refresh_token = create_refresh_token(identity=id)
-    response = jsonify({'message': 'registration successful', 'token':token, 'refresh_token':refresh_token, 'error':None})
-    return response
+    refresh_token_hash, refresh_token_salt = custom_hash(refresh_token)
+
+    cur.execute('''UPDATE "Users"
+            SET refresh_token_hash = %s, refresh_token_salt = %s
+            WHERE user_id = %s''', (str(refresh_token_hash), refresh_token_salt, id))
+    conn.commit()
+
+    cur.close()
+    conn.close()
+    return jsonify({'message': 'registration successful', 'token':token, 'refresh_token':refresh_token, 'error':None})
 
 
 @app.route('/fetchDates', methods=['GET']) 
@@ -212,7 +229,7 @@ def fetchPast():
         result = cur.fetchall()
         print(result)
         if result == []:
-            print({'error':'no appts'})
+            return jsonify({'error':'no appts'})
 
         appts = [{'staff_name':i[0]+' '+i[1], 'appt_time':i[2], 'appt_date':i[3], 'appt_details':i[4]} for i in result]
         cur.close()
@@ -257,7 +274,7 @@ def fetchFuture():
         result = cur.fetchall()
         print(result)
         if result == []:
-            print({'error':'no appts'})
+            return jsonify({'error':'no appts'})
 
         appts = [{'staff_name':i[0]+' '+i[1], 'appt_time':i[2], 'appt_date':i[3], 'appt_details':i[4]} for i in result]
         cur.close()
@@ -279,7 +296,7 @@ def fetchFuture():
         cur.close()
         conn.close()
 
-        return jsonify({'appts':appts}), 200
+        return jsonify({'appts': appts}), 200
 
 
 @app.route('/fetchApptAmount', methods=['GET'])
@@ -314,8 +331,16 @@ def fetchApptAmount():
         today_amount = len(cur.fetchall())
         print(amount)
         print(today_amount)
+
+        cur.close()
+        conn.close()
+
         return jsonify({'amount':amount, 'todayAmount':today_amount}), 200
     else:
+
+        cur.close()
+        conn.close()
+
         return jsonify({'error': 'No type passed'}), 400
 
 
@@ -323,8 +348,40 @@ def fetchApptAmount():
 @jwt_required(refresh=True)
 def refreshJWT():
     id = get_jwt_identity()
+
+    header = request.headers.get('Authorization')
+    old_refresh_token = header[7:]
+
+    conn = psycopg2.connect(host=conn_config[0], dbname=conn_config[1], user=conn_config[2], password=conn_config[3], port=conn_config[4])
+    cur = conn.cursor()
+
+    cur.execute('''SELECT refresh_token_salt
+                FROM "Users"
+                WHERE user_id = %s''', (id, ))
+    refresh_token_salt = cur.fetchone()[0]
+    
+    token_hash, refresh_token_salt = custom_hash(password=old_refresh_token, salt=refresh_token_salt)
+    cur.execute('''SELECT user_id
+            FROM "Users"
+            WHERE user_id=%s AND refresh_token_hash=%s''', 
+            (id, str(token_hash)))
+    fetched = cur.fetchone()
+
+    if fetched == None:
+        return jsonify({'error':'invalid token'}), 401
+
     new_access_token = create_access_token(identity=id)
-    return jsonify({'message':'token sent', 'token':new_access_token})
+    new_refresh_token = create_refresh_token(identity=id)
+    refresh_token_hash, refresh_token_salt = custom_hash(password=new_refresh_token, salt=refresh_token_salt)
+
+    cur.execute('''UPDATE "Users"
+                SET refresh_token_hash = %s, refresh_token_salt = %s
+                WHERE user_id = %s''', (str(refresh_token_hash), refresh_token_salt, id))
+    conn.commit()
+    
+    cur.close()
+    conn.close()
+    return jsonify({'message':'token sent', 'token':new_access_token, 'refresh_token':new_refresh_token, 'error':None})
 
 
 

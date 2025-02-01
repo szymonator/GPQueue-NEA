@@ -123,7 +123,7 @@ function fetchDates(priority, callback, retried = false) {
                     fetchDates(priority, callback, true)
                 } catch(error) {
                     console.error('Failed to refresh token:', error.message || error);
-                    callback('error')
+                    callback('login again')
                 }
             } else {
                 callback('error');
@@ -165,7 +165,7 @@ function fetchAppointments(priority, dates, times, callback, retried=false) {
                     fetchAppointments(priority, dates, times, callback, true)
                 } catch (error) {
                     console.error('Failed to refresh token: ', error.message || error);
-                    callback('error')
+                    callback('login again')
                 }
             } else {
                 callback('error');
@@ -206,7 +206,7 @@ function fetchApptAmount(type, callback, retried=false) {
                     fetchApptAmount(type, callback, true);
                 }catch(error){
                     console.error('Failed to refresh token: ', error.message || error)
-                    callback('error')
+                    callback('login again')
                 }
             } else {
                 callback('error');
@@ -247,7 +247,7 @@ function fetchPast(type, callback, retried=false) {
                     fetchPast(type, callback, true)
                 } catch (error) {
                     console.error('Failed to refresh token: ', error.message || error);
-                    callback('error')
+                    callback('login again')
                 }
             } else {
                 callback('error');
@@ -288,7 +288,7 @@ function fetchFuture(type, callback, retried=false) {
                     fetchFuture(type, callback, true)
                 } catch (error) {
                     console.error('Failed to refresh token: ', error.message || error);
-                    callback('error')
+                    callback('login again')
                 }
             } else {
                 callback('error');
@@ -331,7 +331,7 @@ function chooseAppointment(appt, callback, retried=false) {
                     chooseAppointment(appt, callback, true)
                 } catch (error) {
                     console.error('Failed to refresh token: ', error.message || error);
-                    callback('error')
+                    callback('login again')
                 }
             } else {
                 callback('error')
@@ -372,7 +372,7 @@ function endBookingSession(callback, retried=false) {
                     endBookingSession(callback, true)
                 } catch (error) {
                     console.error('Failed to refresh token: ', error.message || error);
-                    callback('error')
+                    callback('login again')
                 }
             } else {
                 callback('error');
@@ -404,10 +404,11 @@ function refreshJWT() {
                 console.log('message:', data['message']);
                 console.log('token received:', data['token']);
                 sessionStorage.setItem('jwt', data['token']);
+                sessionStorage.setItem('refresh_token', data['refresh_token'])
             })
             .catch((error) => {
                 console.error('Error:', error.message || error);
-                throw error;
+                throw error
             });
     }
 

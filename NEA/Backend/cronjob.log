@@ -250,3 +250,49 @@ TimeoutError: [Errno 60] Operation timed out
 2025-01-31 22:31
 2025-01-31 23:01
 2025-01-31 23:31
+2025-02-01 00:01
+2025-02-01 01:01
+2025-02-01 02:01
+2025-02-01 02:31
+2025-02-01 05:01
+2025-02-01 06:02
+2025-02-01 08:03
+2025-02-01 09:04
+2025-02-01 10:31
+2025-02-01 11:01
+2025-02-01 11:31
+2025-02-01 12:01
+2025-02-01 12:31
+2025-02-01 13:01
+Traceback (most recent call last):
+  File "/Users/szymonator1625/PythonPrograms/GPQueue-NEA/NEA/Backend/cronjob.py", line 29, in <module>
+    cur.execute('''UPDATE appointments
+psycopg2.errors.UndefinedTable: relation "appointments" does not exist
+LINE 1: UPDATE appointments
+               ^
+
+2025-02-01 13:31
+Traceback (most recent call last):
+  File "/Users/szymonator1625/PythonPrograms/GPQueue-NEA/NEA/Backend/cronjob.py", line 29, in <module>
+    cur.execute('''UPDATE appointments
+psycopg2.errors.UndefinedTable: relation "appointments" does not exist
+LINE 1: UPDATE appointments
+               ^
+
+2025-02-01 14:01
+Traceback (most recent call last):
+  File "/Users/szymonator1625/PythonPrograms/GPQueue-NEA/NEA/Backend/cronjob.py", line 29, in <module>
+    cur.execute('''UPDATE appointments
+psycopg2.errors.UndefinedTable: relation "appointments" does not exist
+LINE 1: UPDATE appointments
+               ^
+
+2025-02-01 15:01
+2025-02-01 15:31
+2025-02-01 16:01
+2025-02-01 16:31
+2025-02-01 17:01
+2025-02-01 18:01
+2025-02-01 20:01
+2025-02-01 20:31
+2025-02-01 21:01

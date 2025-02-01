@@ -36,7 +36,18 @@ if type == 'patient':
         #     staff_dict[member[0]] = member[1]+ ' ' +member[2]
 
         appts = [{'staff_name':i[0]+' '+i[1], 'appt_time':i[2], 'appt_date':i[3], 'appt_details':i[4]} for i in result]
+
+        cur.execute('''SELECT refresh_token_hash, refresh_token_salt
+                    FROM "Users"
+                    WHERE user_id = %s''', (1, ))
+        result = cur.fetchone()
+        print(result)
+
         cur.close()
         conn.close()
 
         print({'appts':appts})
+
+header = 'Bearer jdiweodjeifh9h4928fhw9erio'
+old_refresh_token = header[7:]
+print(old_refresh_token)

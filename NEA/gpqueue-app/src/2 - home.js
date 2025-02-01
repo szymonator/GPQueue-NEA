@@ -32,8 +32,12 @@ function PatientHome() {
             setCookies(hubOrSub('home', cookies));
             hasRun.current = true
             fetchApptAmount(cookies.type, (callback) =>{
-                setAppointmentAmount(callback)
-                console.log(callback)
+                if (callback === 'login again') {
+                    setCookies()
+                    navigate('/login')
+                }
+                    setAppointmentAmount(callback)
+                    console.log(callback)
             })
         }}, [cookies, setCookies, navigate])
 
@@ -96,8 +100,12 @@ function StaffHome() {
             setCookies(hubOrSub('StaffHome', cookies));
             hasRun.current = true
         fetchApptAmount(cookies.type, (callback) =>{
-            setAppointmentAmount(callback[0])
-            setAmountToday(callback[1])
+            if (callback === 'login again') {
+                setCookies()
+                navigate('/login')
+            }
+                setAppointmentAmount(callback[0])
+                setAmountToday(callback[1])
         })
         }}, [cookies, setCookies, navigate])
 
@@ -161,6 +169,9 @@ function FutureAppts(){
                     }
                     setFullFutureAppts(temp)
                     setCurrentFutureAppts(temp[0])
+                } else if (callback === 'login again') {
+                    setCookies()
+                    navigate('/login')
                 }
             })
         
@@ -251,11 +262,14 @@ function PastAppts(){
                     }
                     setFullPastAppts(temp)
                     setCurrentPastAppts(temp[0])
+                } else if (callback === 'login again') {
+                    setCookies()
+                    navigate('/login')
                 }
             })
         }
 
-        }, [cookies, setCookies])
+        }, [cookies, setCookies, navigate])
 
 
     const handleNext = (event) => {

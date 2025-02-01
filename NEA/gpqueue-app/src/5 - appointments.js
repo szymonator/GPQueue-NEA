@@ -149,6 +149,10 @@ function BookAppointment2() {
                         times: '',
                     })
                     navigate('/home')
+                } else if (callback === 'login again') {
+                    setBookingData()
+                    setCookies()
+                    navigate('/login')
                 } else {
                     setFullDates(callback['dates']);
                     setCurrentDates(callback['dates'][0]); 
@@ -364,6 +368,10 @@ function BookAppointment4() {
                 if (!callback.length){
                     setNoAppts(true)
                     console.log('no appts is true')
+                } else if (callback === 'login again') {
+                    setBookingData()
+                    setCookies()
+                    navigate('/login')
                 } else {
 
                     setApptsList(callback)
@@ -383,7 +391,7 @@ function BookAppointment4() {
         }
 
             
-        }, [cookies, currentAppt, setCookies, tempData, navigate, setBookingData]);
+        }, [cookies, currentAppt, setCookies, tempData, navigate, setBookingData, index]);
 
     useEffect(() => {
 
@@ -393,13 +401,16 @@ function BookAppointment4() {
 
         if (countdown < 1) {
 
-            // API STUFF TO TELL BACKEND TO REMOVE THE TAKEN APPTS FROM THE 'POSSIBLES' AREA.
             endBookingSession((callback) => {
                 console.log(callback)
                 setBookingData({priority: null,
                     reason: '',
                     dates: '',
                     times: '',})
+                if (callback === 'login again') {
+                    setCookies()
+                    navigate('/login')
+                    }
                 navigate('/timeout')
             })
         }
@@ -451,15 +462,17 @@ function BookAppointment4() {
     }
 
     const handleExit = () => {
-        // // API STUFF TO TELL BACKEND TO REMOVE THE TAKEN APPTS FROM THE 'POSSIBLES' AREA.
-
         endBookingSession((callback) => {
             console.log(callback)
             setBookingData({priority: null,
                 reason: '',
                 dates: '',
                 times: '',})
-    
+
+            if (callback === 'login again') {
+                setCookies()
+                navigate('/login')
+            }
             navigate('/home')
         })
     }
