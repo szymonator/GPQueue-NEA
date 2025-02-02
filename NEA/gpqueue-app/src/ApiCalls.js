@@ -13,238 +13,254 @@ export {
 
 const domain = 'http://127.0.0.1:5000/';
 
-function uponLogin(email, password, callback) {
-    fetch(domain + 'get_token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, password: password }),
-        credentials: 'include'
-    })
-        .then((response) => {
-            if (!response.ok) {
+async function uponLogin(email, password, callback) {
+    try{
+        const loginResponse = await fetch(domain + 'get_token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password }),
+            credentials: 'include'
+        })
+            if (!loginResponse.ok) {
                 throw new Error('Login failed!');
             }
-            return response.json();
-        })
-        .then((data) => {
-            console.log('message:', data['message']);
-            console.log('token received:', data['token']);
-            sessionStorage.setItem('jwt', data['token']);
-            sessionStorage.setItem('refresh_token', data['refresh_token']);
+            
+            const loginData = await loginResponse.json();
 
-            fetch(domain + '/get_name', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${data['token']}`
-                },
-                credentials: 'include'
-            })
-                .then((response) => {
-                    if (!response.ok) {
+            console.log('message:', loginData['message']);
+            console.log('token received:', loginData['token']);
+            sessionStorage.setItem('jwt', loginData['token']);
+            sessionStorage.setItem('refresh_token', loginData['refresh_token']);
+
+            try {
+                const nameResponse = await fetch(domain + '/get_name', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${loginData['token']}`
+                    },
+                    credentials: 'include'
+                })
+
+                    if (!nameResponse.ok) {
                         throw new Error("Couldn't fetch name :(");
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log(data['name']);
-                    callback(data);
-                })
-                .catch(error => {
-                    console.error('Error:', error.message);
-                });
+                    
+                    const nameData = await nameResponse.json();
+                    console.log(nameData['name']);
+                    callback(nameData);
+                    return
 
-        })
-        .catch((error) => {
+                } catch(error){
+                        console.error('Error:', error.message);
+                }
+
+        } catch(error){
             console.error('Error:', error);
             callback('failed');
-        });
+            return
+        }
 }
 
-function uponRegister(fname, sname, email, type, password, dob, callback) {
-    fetch(domain + 'register', {
-        method: 'POST',
-        body: JSON.stringify({ fname: fname, sname: sname, email: email, type: type, password: password, dob: dob }),
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include'
-    })
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error("Couldn't register/get JWT :(");
-            }
-            return response.json();
+async function uponRegister(fname, sname, email, type, password, dob, callback) {
+    try {
+        const response = await fetch(domain + 'register', {
+            method: 'POST',
+            body: JSON.stringify({ fname: fname, sname: sname, email: email, type: type, password: password, dob: dob }),
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
         })
-        .then((data) => {
-            if (data['error'] === "Email in use") {
-                throw new Error("Email in use");
-            }
-            console.log('token:', data['token']);
-            sessionStorage.setItem('jwt', data['token']);
-            sessionStorage.setItem('refresh_token', data['refresh_token']);
-            callback(1);
-        })
-        .catch(error => {
-            console.error('Error:', error.message || error);
-            callback(0);
-        });
+
+        if (!response.ok) {
+            throw new Error("Couldn't register/get JWT :(");
+        }
+        
+        const data = await response.json();
+
+        if (data['error'] === "Email in use") {
+            throw new Error("Email in use");
+        }
+
+        console.log('token:', data['token']);
+        sessionStorage.setItem('jwt', data['token']);
+        sessionStorage.setItem('refresh_token', data['refresh_token']);
+        callback(1);
+
+    } catch(error){
+        console.error('Error:', error.message || error);
+        callback(0);
+    }
 }
 
-function fetchDates(priority, callback, retried = false) {
-    const token = sessionStorage.getItem('jwt');
-    fetch(domain + `fetchDates?priority=${priority}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include',
-    })
-        .then((response) => {
-            if (response.status === 401) {
-                console.log('Token expired or unauthorised access');
-                throw new Error('refresh');
-            } else if (!response.ok) {
-                throw new Error("Couldn't fetch dates :(");
-            }
-            return response.json();
-        })
-        .then((data) => {
-            if (data['error']) {
-                throw new Error(data['error']);
-            }
-            console.log(data['message']);
-            callback(data['dates']);
-        })
-        .catch(async (error) => {
-            console.error('Error:', error.message || error);
-            if (error.message === 'refresh' && !retried) {
-                try{
-                    await refreshJWT();
-                    fetchDates(priority, callback, true)
-                } catch(error) {
-                    console.error('Failed to refresh token:', error.message || error);
-                    callback('login again')
-                }
-            } else {
-                callback('error');
-            }
+async function fetchDates(priority, callback, retried = false) {
+    try {
+        const token = sessionStorage.getItem('jwt');
+        const response = await fetch(domain + `fetchDates?priority=${priority}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            credentials: 'include',
         });
+
+        if (response.status === 401) {
+            console.log('Token expired or unauthorised access');
+            throw new Error('refresh');
+        } else if (!response.ok) {
+            throw new Error("Couldn't fetch dates :(");
+        }
+
+        const data = await response.json();
+
+        if (data.error) {
+            throw new Error(data['error']);
+        }
+
+        console.log(data['message']);
+        callback(data['dates']);
+
+    } catch (error) {
+        console.error('Error:', error.message || error);
+
+        if (error.message === 'refresh' && !retried) {
+            try {
+                await refreshJWT();
+                return fetchDates(priority, callback, true);
+            } catch (refreshError) {
+                console.error('Failed to refresh token:', refreshError.message || refreshError);
+                callback('login again');
+            }
+        } else {
+            callback('error');
+        }
+    }
 }
 
-function fetchAppointments(priority, dates, times, callback, retried=false) {
-    const token = sessionStorage.getItem('jwt');
-    fetch(domain + 'fetchAppointments', {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ priority, dates, times }),
-        credentials: 'include'
-    })
-        .then((response) => {
+
+async function fetchAppointments(priority, dates, times, callback, retried=false) {
+    try{
+        const token = sessionStorage.getItem('jwt');
+        const response = await fetch(domain + 'fetchAppointments', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ priority, dates, times }),
+            credentials: 'include'
+        })
             if (response.status === 401) {
                 console.log('Token expired or unauthorised access');
                 throw new Error('refresh');
             } else if (!response.ok) {
                 throw new Error("Couldn't fetch appointments :(");
             }
-            return response.json();
-        })
-        .then((data) => {
+
+            const data = await response.json()
+
             if (data['error']) {
                 throw new Error(data['error']);
             }
             callback(data['appts']);
-        })
-        .catch(async (error) => {
+            return
+
+        } catch(error) {
             console.error('Error:', error.message || error);
             if (error.message === 'refresh' && !retried) {
                 try {
                     await refreshJWT();
-                    fetchAppointments(priority, dates, times, callback, true)
+                    return fetchAppointments(priority, dates, times, callback, true)
                 } catch (error) {
                     console.error('Failed to refresh token: ', error.message || error);
                     callback('login again')
+                    return
                 }
             } else {
                 callback('error');
+                return
             }
-        });
+        }
 }
 
-function fetchApptAmount(type, callback, retried=false) {
-    const token = sessionStorage.getItem('jwt');
-    fetch(domain + `fetchApptAmount?type=${type}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include'
-    })
-        .then((response) => {
+async function fetchApptAmount(type, callback, retried=false) {
+    try{
+        const token = sessionStorage.getItem('jwt');
+        const response = await fetch(domain + `fetchApptAmount?type=${type}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            credentials: 'include'
+        })
+
             if (response.status === 401) {
                 console.log('Token expired or unauthorised access');
                 throw new Error('refresh');
             } else if (!response.ok) {
                 throw new Error("fetch failed :(");
             }
-            return response.json();
-        })
-        .then((data) => {
+            
+            const data = await response.json();
+
             if (data['error']) {
                 throw new Error(data['error']);
             }
             callback(type === 'patient' ? data['amount'] : [data['amount'], data['todayAmount']]);
-        })
-        .catch(async (error) => {
-            console.error('Error:', error.message || error);
-            if (error.message === 'refresh' && !retried) {
-                try{
-                    await refreshJWT();
-                    fetchApptAmount(type, callback, true);
-                }catch(error){
-                    console.error('Failed to refresh token: ', error.message || error)
-                    callback('login again')
+            return
+
+        } catch(error){
+                console.error('Error:', error.message || error);
+                if (error.message === 'refresh' && !retried) {
+                    try{
+                        await refreshJWT();
+                        return fetchApptAmount(type, callback, true);
+                    }catch(error){
+                        console.error('Failed to refresh token: ', error.message || error)
+                        callback('login again')
+                        return
+                    }
+                } else {
+                    callback('error');
+                    return
                 }
-            } else {
-                callback('error');
-            }
-        });
+
+        }
 }
 
-function fetchPast(type, callback, retried=false) {
-    const token = sessionStorage.getItem('jwt');
-    fetch(domain + `fetchPast?type=${type}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include'
-    })
-        .then((response) => {
-            if (response.status === 401) {
+async function fetchPast(type, callback, retried=false) {
+    try {
+        const token = sessionStorage.getItem('jwt');
+        const response = await fetch(domain + `fetchPast?type=${type}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            credentials: 'include'
+        })
+            
+        if (response.status === 401) {
                 console.log('Token expired or unauthorised access');
                 throw new Error('refresh');
             } else if (!response.ok) {
                 throw new Error("fetch failed :(");
             }
-            return response.json();
-        })
-        .then((data) => {
-            if (data['error']) {
-                throw new Error(data['error']);
-            }
-            callback(data['appts']);
-        })
-        .catch(async (error) => {
+            
+        const data = await response.json();
+
+        if (data['error']) {
+            throw new Error(data['error']);
+        }
+        callback(data['appts']);
+
+        } catch(error){
             console.error('Error:', error.message || error);
             if (error.message === 'refresh' && !retried) {
                 try {
                     await refreshJWT();
-                    fetchPast(type, callback, true)
+                    return fetchPast(type, callback, true)
                 } catch (error) {
                     console.error('Failed to refresh token: ', error.message || error);
                     callback('login again')
@@ -252,40 +268,40 @@ function fetchPast(type, callback, retried=false) {
             } else {
                 callback('error');
             }
-        });
+    }
 }
 
-function fetchFuture(type, callback, retried=false) {
-    const token = sessionStorage.getItem('jwt');
-    fetch(domain + `fetchFuture?type=${type}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include'
-    })
-        .then((response) => {
+async function fetchFuture(type, callback, retried=false) {
+    try {
+        const token = sessionStorage.getItem('jwt');
+        const response = await fetch(domain + `fetchFuture?type=${type}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            credentials: 'include'
+        })
+
             if (response.status === 401) {
                 console.log('Token expired or unauthorised access');
                 throw new Error('refresh');
             } else if (!response.ok) {
                 throw new Error("fetch failed :(");
             }
-            return response.json();
-        })
-        .then((data) => {
+            const data = await response.json();
+
             if (data['error']) {
                 throw new Error(data['error']);
             }
             callback(data['appts']);
-        })
-        .catch(async (error) => {
+
+        } catch(error){
             console.error('Error:', error.message || error);
             if (error.message === 'refresh' && !retried) {
                 try {
                     await refreshJWT();
-                    fetchFuture(type, callback, true)
+                    return fetchFuture(type, callback, true)
                 } catch (error) {
                     console.error('Failed to refresh token: ', error.message || error);
                     callback('login again')
@@ -293,42 +309,43 @@ function fetchFuture(type, callback, retried=false) {
             } else {
                 callback('error');
             }
-        });
+        }
 }
 
-function chooseAppointment(appt, callback, retried=false) {
-    const token = sessionStorage.getItem('jwt');
-    fetch(domain + 'chooseAppointment', {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ appt }),
-        credentials: 'include'
-    })
-        .then((response) => {
-            console.log('response: ', response)
+async function chooseAppointment(appt, callback, retried=false) {
+    try{
+        const token = sessionStorage.getItem('jwt');
+        const response = await fetch(domain + 'chooseAppointment', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ appt }),
+            credentials: 'include'
+        })
+
             if (response.status === 401) {
                 console.log('Token expired or unauthorised access');
                 throw new Error('refresh');
             } else if (!response.ok) {
                 throw new Error("Booking failed :(");
             }
-            return response.json();
-        })
-        .then((data) => {
+            const data = await response.json();
+
+
             if (data['error']) {
                 throw new Error(data['error']);
             }
             callback(data['msg']);
-        })
-        .catch(async (error) => {
+
+        } catch(error){
+
             console.error('Error:', error.message || error);
             if (error.message === 'refresh' && !retried) {
                 try {
                     await refreshJWT();
-                    chooseAppointment(appt, callback, true)
+                    return chooseAppointment(appt, callback, true)
                 } catch (error) {
                     console.error('Failed to refresh token: ', error.message || error);
                     callback('login again')
@@ -336,56 +353,60 @@ function chooseAppointment(appt, callback, retried=false) {
             } else {
                 callback('error')
             }
-        });
+    }
 }
 
-function endBookingSession(callback, retried=false) {
-    const token = sessionStorage.getItem('jwt');
-    fetch(domain + 'endBookingSession', {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include'
-    })
-        .then((response) => {
+async function endBookingSession(callback, retried=false) {
+    try {
+        const token = sessionStorage.getItem('jwt');
+        const response = await fetch(domain + 'endBookingSession', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            credentials: 'include'
+        })
+
             if (response.status === 401) {
                 console.log('Token expired or unauthorised access');
                 throw new Error('refresh');
             } else if (!response.ok) {
                 throw new Error("Exit failed :(");
             }
-            return response.json();
-        })
-        .then((data) => {
+
+            const data = await response.json();
+
             if (data['error']) {
                 throw new Error(data['error']);
             }
             callback(data['msg']);
-        })
-        .catch(async (error) => {
-            console.error('Error:', error.message || error);
-            if (error.message === 'refresh' && !retried) {
-                try {
-                    await refreshJWT();
-                    endBookingSession(callback, true)
-                } catch (error) {
-                    console.error('Failed to refresh token: ', error.message || error);
-                    callback('login again')
-                }
-            } else {
-                callback('error');
+
+    } catch(error){
+
+        console.error('Error:', error.message || error);
+        if (error.message === 'refresh' && !retried) {
+            try {
+                await refreshJWT();
+                return endBookingSession(callback, true)
+            } catch (error) {
+                console.error('Failed to refresh token: ', error.message || error);
+                callback('login again')
             }
-        });
+        } else {
+            callback('error');
+        }
+
+    }
 }
 
-function refreshJWT() {
+async function refreshJWT() {
     const refreshToken = sessionStorage.getItem('refresh_token');
     console.log('refreshJWT function is running');
 
     if (refreshToken) {
-        return fetch(domain + '/refreshJWT', {
+        try{
+        const response = await fetch(domain + '/refreshJWT', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -394,22 +415,24 @@ function refreshJWT() {
             body: JSON.stringify({ refresh_token: refreshToken }),
             credentials: 'include'
         })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error('JWT refresh failed!');
-                }
-                return response.json();
-            })
-            .then((data) => {
-                console.log('message:', data['message']);
-                console.log('token received:', data['token']);
-                sessionStorage.setItem('jwt', data['token']);
-                sessionStorage.setItem('refresh_token', data['refresh_token'])
-            })
-            .catch((error) => {
-                console.error('Error:', error.message || error);
-                throw error
-            });
+
+            if (!response.ok) {
+                throw new Error('JWT refresh failed!');
+            }
+            const data = await response.json();
+
+
+            console.log('message:', data['message']);
+            console.log('token received:', data['token']);
+            sessionStorage.setItem('jwt', data['token']);
+            sessionStorage.setItem('refresh_token', data['refresh_token'])
+
+            return response
+
+        } catch(error){
+            console.error('Error:', error.message || error);
+            throw error
+        }
     }
 
     return Promise.reject(new Error('No refresh token found'));

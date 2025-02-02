@@ -174,7 +174,7 @@ function Register() {
             <p>Email:</p><input name="email"></input>
             <p>Password:</p><input name="password" type="password"></input>
             <p>(Your password must be larger than 10 characters and include capitals, numbers, and special characters)</p>
-            <p>Confirm Password:</p><input name="cpassword"></input>
+            <p>Confirm Password:</p><input name="cpassword" type='password'></input>
 
         </div>
         <div className={'Column'}>
