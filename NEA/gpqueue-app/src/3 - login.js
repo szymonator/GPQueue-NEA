@@ -71,7 +71,7 @@ function Login() {
             <form onSubmit={handleSubmit}>
                 <div>
                 <p>Email:</p><input name="email"></input>
-                <p>Password:</p><input name="password"></input>
+                <p>Password:</p><input name="password" type="password"></input>
                 </div>
                 <button type='submit'>Login!</button>
             </form>
@@ -172,7 +172,7 @@ function Register() {
         <div className={'Row'}>
         <div className={'Column'}>
             <p>Email:</p><input name="email"></input>
-            <p>Password:</p><input name="password"></input>
+            <p>Password:</p><input name="password" type="password"></input>
             <p>(Your password must be larger than 10 characters and include capitals, numbers, and special characters)</p>
             <p>Confirm Password:</p><input name="cpassword"></input>
 
