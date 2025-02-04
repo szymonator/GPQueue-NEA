@@ -1,8 +1,7 @@
 import os
 from dotenv import load_dotenv
 import psycopg2
-from datetime import datetime
-import datetime as datetime2
+import datetime
 import yagmail
 
 load_dotenv()
@@ -190,7 +189,7 @@ def choose_appointment(appt, id):
         '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
         '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30']
 
-        timechange = datetime2.timedelta(days=1)
+        timechange = datetime.timedelta(days=1)
 
         flag = False
         while not flag:
