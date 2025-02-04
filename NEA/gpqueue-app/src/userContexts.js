@@ -12,10 +12,6 @@ export const CookiesProvider = ({ children }) => {
         currentPage: null,
         backUsed : false,
         authBool: false,
-        redoFetch: false,
-        fetchFunction: null,
-        data: {},
-        
     });
 
     return (

@@ -1,4 +1,3 @@
-
 //notes
 // quite similar to python OOP, but self -> this
 // this.items is the stacks items, stored as an array
@@ -11,11 +10,7 @@ export default class Stack {
     }
 
     isEmpty(){
-        if (this.items.length === 0) {
-            return true
-        } else {
-            return false
-        }
+        return (this.items.length === 0)
     }
 
     push(val){

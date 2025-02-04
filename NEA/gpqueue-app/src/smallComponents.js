@@ -61,14 +61,10 @@ function Back() {
         let newCookies = {
             type: cookies.type,
             name: cookies.name,
-            id: cookies.id,
             prevPageStack: prevPageStack.items, 
             currentPage: prevPage,
             backUsed: true,
             authBool: cookies.authBool,
-            redoFetch: cookies.redoFetch,
-            fetchFunction: cookies.fetchFunction,
-            data: cookies.data,
         }
 
         setCookies(newCookies);
@@ -116,20 +112,12 @@ function hubOrSub(pageName, cookies) { //UPON CALLING THIS FUNCTION, PASS IN THE
         prevPageStack.push(prevPage)
     }
 
-    let backBool
-    if (cookies.backUsed) {
-        backBool = false;
-    }
-
     return {
         type: cookies.type,
         name: cookies.name,
         prevPageStack: prevPageStack.items, //technically stack dehydration
         currentPage: pageName,
-        backUsed: backBool,
+        backUsed: false,
         authBool: cookies.authBool,
-        redoFetch: cookies.redoFetch,
-        fetchFunction: cookies.fetchFunction,
-        data: cookies.data,
     }
 }

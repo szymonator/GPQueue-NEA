@@ -48,9 +48,6 @@ function Login() {
                     currentPage: null,
                     backUsed : false,
                     authBool: true,
-                    redoFetch: false,
-                    fetchFunction: null,
-                    data: {}
                 });
 
                 if (callback['type'] === 'patient') {
@@ -136,9 +133,6 @@ function Register() {
                         currentPage: null,
                         backUsed : false,
                         authBool: true,
-                        redoFetch: false,
-                        fetchFunction: null,
-                        data: {},
                     });
 
                     console.log(type)

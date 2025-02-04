@@ -18,3 +18,9 @@ const functionCopy = validPassword
 
 console.log(functionCopy('Hellooooo123*'))
 console.log(functionCopy)
+
+function isEmpty(list){
+    return list.length === 0
+}
+
+console.log(isEmpty([]))
