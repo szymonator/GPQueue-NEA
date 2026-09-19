@@ -1,2 +1,2 @@
 # GPQueue NEA
- This is Szymon Galutowski's NEA repository, named GPQueue.
+ Medical priority based booking system. Uses a Postgres database, Python backend, Fetch API, Flask, React frontend.
